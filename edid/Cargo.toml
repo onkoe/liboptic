@@ -1,0 +1,17 @@
+[package]
+name = "edid"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bitvec = { version = "1.0.1", default-features = false, features = ["alloc"] }
+bytemuck = { version = "1.19.0", features = ["derive", "extern_crate_alloc"] }
+tracing = { version = "0.1.40", default-features = false, features = [
+    "attributes",
+] }
+winnow = { version = "0.6.20", default-features = false, features = ["alloc"] }
+
+[clippy.lints]
+struct_field_names = "deny"
+partial_pub_fields = "deny"
+use_self = "deny"
