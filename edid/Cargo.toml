@@ -11,6 +11,10 @@ tracing = { version = "0.1.40", default-features = false, features = [
 ] }
 winnow = { version = "0.6.20", default-features = false, features = ["alloc"] }
 
+[dev-dependencies]
+hex = { version = "0.4.3", default-features = false, features = ["alloc", "std"] }
+tracing-subscriber = "0.3.18"
+
 [clippy.lints]
 struct_field_names = "deny"
 partial_pub_fields = "deny"

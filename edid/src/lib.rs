@@ -8,11 +8,11 @@
 #![no_std]
 
 use structures::{_18bytes, basic_info, color, est_timings, extension, id, std_timings, version};
+use winnow::PResult;
 
-// TODO: re-export with prelude instead
-pub mod structures;
-
-pub const EDID_HEADER: [u8; 8] = [0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00];
+mod parser;
+mod prelude;
+pub mod structures; // TODO: re-export with prelude instead
 
 /// The base EDID structure.
 #[repr(C)]
@@ -46,4 +46,10 @@ pub struct Edid {
 
     /// Info about the E-EDID extensions this EDID carries behind it.
     extension_info: extension::ExtensionInfo,
+}
+
+impl Edid {
+    pub fn new(edid_data: &mut &[u8]) -> PResult<Self> {
+        parser::parse(edid_data)
+    }
 }
