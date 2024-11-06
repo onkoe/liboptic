@@ -157,3 +157,93 @@ fn convert_5bit_ascii(code: u8) -> Option<char> {
         None
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{convert_5bit_ascii, convert_5bit_ascii_slice};
+    use crate::{prelude::internal::logger, structures::id::Date};
+
+    #[test]
+    fn dell_s2417dg_id() {
+        logger();
+        let input = crate::prelude::internal::raw_edid_by_filename("dell_s2417dg.raw.input");
+        let vendor_product_info = super::parse(&input).unwrap();
+
+        // check the various properties
+
+        // date
+        let Date::Manufacture { week, year } = vendor_product_info.date else {
+            panic!("found wrong date kind");
+        };
+        assert_eq!(week.unwrap(), 28);
+        assert_eq!(year, 2018);
+
+        // vendor
+        assert_eq!(vendor_product_info.manufacturer_name, *"Dell Inc.");
+
+        // model
+        assert_eq!(vendor_product_info.product_code, 41191);
+
+        // serial
+        assert_eq!(vendor_product_info.serial_number, Some(1));
+    }
+
+    #[test]
+    fn that_guys_laptop() {
+        logger();
+        let input = crate::prelude::internal::edid_by_filename("1.input");
+        let vendor_product_info = super::parse(&input).unwrap();
+
+        // check the various properties
+
+        // date
+        let Date::Manufacture { week, year } = vendor_product_info.date else {
+            panic!("found wrong date kind");
+        };
+        assert!(week.is_none());
+        assert_eq!(year, 2012);
+
+        // vendor
+        assert_eq!(vendor_product_info.manufacturer_name, *"DO NOT USE - AUO");
+
+        // model
+        assert_eq!(vendor_product_info.product_code, 8237);
+
+        // serial
+        assert!(vendor_product_info.serial_number.is_none());
+    }
+
+    #[test]
+    fn test_5bit() {
+        // these are the end points, so they should work.
+        let a = convert_5bit_ascii(0b00001).unwrap();
+        let z = convert_5bit_ascii(0b11010).unwrap();
+
+        assert_eq!(a, 'A');
+        assert_eq!(z, 'Z');
+
+        // we're one-indexed, not zero-indexed. so 0x0 should fail
+        let zero = convert_5bit_ascii(0b00000);
+        assert!(zero.is_none());
+
+        // we'll also check every letter, just to be safe.
+        let chars = 'A'..='Z';
+        let numbers = 0b00001..=0b11010;
+
+        for (code, expected_char) in numbers.zip(chars) {
+            let actual = convert_5bit_ascii(code).unwrap();
+            assert_eq!(expected_char, actual);
+        }
+    }
+
+    #[test]
+    fn test_5bit_dell() {
+        let arr: [u8; 3] = [
+            0x04, // 'D'
+            0x05, // 'E',
+            0x0C, // 'L',
+        ];
+
+        assert_eq!(convert_5bit_ascii_slice(arr).unwrap(), ['D', 'E', 'L']);
+    }
+}
