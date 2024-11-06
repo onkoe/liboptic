@@ -3,6 +3,7 @@ use winnow::{
     PResult,
 };
 
+mod basic_info;
 mod header;
 mod id;
 pub(super) mod util;
