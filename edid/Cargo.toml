@@ -15,7 +15,7 @@ winnow = { version = "0.6.20", default-features = false, features = ["alloc"] }
 hex = { version = "0.4.3", default-features = false, features = ["alloc", "std"] }
 tracing-subscriber = "0.3.18"
 
-[clippy.lints]
+[lints.clippy]
 struct_field_names = "deny"
 partial_pub_fields = "deny"
 use_self = "deny"
