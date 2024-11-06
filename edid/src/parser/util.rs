@@ -12,6 +12,15 @@ pub(crate) fn edid_by_filename(name: &str) -> alloc::vec::Vec<u8> {
     hex::decode(s.trim()).unwrap()
 }
 
+/// Grabs a raw (not encoded) EDID from disk at `tests/assets/`
+#[cfg(test)]
+pub(crate) fn raw_edid_by_filename(name: &str) -> alloc::vec::Vec<u8> {
+    let path =
+        std::path::PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/assets")).join(name);
+
+    std::fs::read(path).unwrap()
+}
+
 /// Starts the tracing subscriber.
 #[cfg(test)]
 pub(crate) fn logger() {
