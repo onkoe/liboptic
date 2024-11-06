@@ -14,6 +14,13 @@ mod parser;
 mod prelude;
 pub mod structures; // TODO: re-export with prelude instead
 
+/// The latest version of the EDID standard that this library includes support
+/// for.
+pub const LATEST_SUPPORTED_VERSION: u8 = 0x01;
+
+/// The latest revision of the standard this library supports.
+pub const LATEST_SUPPORTED_REVISION: u8 = 0x04;
+
 /// The base EDID structure.
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
