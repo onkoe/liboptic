@@ -18,6 +18,9 @@ pub fn parse(input: &mut &[u8]) -> PResult<super::Edid> {
     // grab vendor + product info
     let _vendor_product_info = id::parse(input)?;
 
+    // edid standard version + revision
+    let _rnv = version::parse(input)?;
+
     todo!()
 }
 
