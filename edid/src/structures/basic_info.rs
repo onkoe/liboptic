@@ -36,7 +36,7 @@ pub mod vsi {
 
         Digital {
             color_bit_depth: digital::ColorBitDepth,
-            standards: Option<digital::SupportedVideoInterfaces>,
+            supported_interface: Option<digital::SupportedVideoInterface>,
         },
     }
 
@@ -73,9 +73,9 @@ pub mod vsi {
         #[repr(C)]
         #[derive(Clone, Debug, PartialEq, PartialOrd)]
         pub struct SyncTypes {
-            separate_sync_h_and_v: bool,
-            composite_sync_horizontal: bool,
-            composite_sync_green_video: bool,
+            pub separate_sync_h_and_v: bool,
+            pub composite_sync_horizontal: bool,
+            pub composite_sync_green_video: bool,
         }
     }
 
@@ -96,15 +96,15 @@ pub mod vsi {
             Reserved,
         }
 
-        /// The supported digital video interface standards for a digital display.
+        /// A supported digital video interface standard for a digital display.
         #[repr(C)]
         #[derive(Clone, Debug, PartialEq, PartialOrd)]
-        pub struct SupportedVideoInterfaces {
-            dvi: bool,
-            hdmi_a: bool,
-            hdmi_b: bool,
-            mddi: bool,
-            displayport: bool,
+        pub enum SupportedVideoInterface {
+            Dvi,
+            HdmiA,
+            HdmiB,
+            Mddi,
+            DisplayPort,
         }
     }
 }
