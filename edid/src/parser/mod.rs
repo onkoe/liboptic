@@ -6,6 +6,7 @@ use winnow::{
 mod header;
 mod id;
 pub(super) mod util;
+mod version;
 
 pub fn parse(input: &mut &[u8]) -> PResult<super::Edid> {
     // check the length
