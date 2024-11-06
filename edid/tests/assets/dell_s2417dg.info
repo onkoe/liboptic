@@ -1,0 +1,11 @@
+output from `edid-decode`:
+
+Block 0, Base EDID:
+EDID Structure Version & Revision: 1.4
+Vendor & Product Identification:
+Manufacturer: DEL
+Model: 41191
+Serial Number: 000000001 (0x00000001)
+Made in: week 28 of 2018
+
+btw i got rid of the serial, but that also messes up the checksum. so fix that at some point
