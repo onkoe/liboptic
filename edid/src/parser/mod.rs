@@ -4,6 +4,7 @@ use winnow::{
 };
 
 mod header;
+mod id;
 pub(super) mod util;
 
 pub fn parse(input: &mut &[u8]) -> PResult<super::Edid> {
@@ -12,6 +13,9 @@ pub fn parse(input: &mut &[u8]) -> PResult<super::Edid> {
 
     // make sure header's right
     header::parse(input)?;
+
+    // grab vendor + product info
+    let _vendor_product_info = id::parse(input)?;
 
     todo!()
 }

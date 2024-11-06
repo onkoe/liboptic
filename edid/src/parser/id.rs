@@ -1,0 +1,159 @@
+//! `id`: the second step in parsing.
+//!
+//! This contains vendor and product information.
+
+use arrayvec::ArrayString;
+use bitvec::{field::BitField, order::Msb0, view::BitView};
+use winnow::{
+    error::{ErrMode, ParserError as _},
+    prelude::*,
+};
+
+use crate::structures::{self, id::VendorProductId};
+
+/// Parses out the `VendorProductId` given the raw input.
+#[tracing::instrument]
+pub(super) fn parse(input: &[u8]) -> PResult<VendorProductId> {
+    // the first two bytes are the manufacturer name
+    let manufacturer_name = vendor(&mut [input[0x08], input[0x09]])?;
+
+    // the next two make a unique hex number indicating which display model
+    // we've got.
+    //
+    // this is from the manufacturer. no text conversion.
+    let product_code: u16 = bytemuck::must_cast([input[0x0A], input[0x0B]]);
+
+    // same thing here for the serial number.
+    //
+    /* TODO:
+    Note for Table 3.7: The EDID structure version 1, revision 1 (and newer) offers a way to represent the
+    serial number of the monitor as an ASCII string in a separate descriptor block. Refer to section 3.10.3
+    Display Descriptors for an alternative method of defining a serial number.
+    */
+    let serial_section = [input[0x0C], input[0x0D], input[0x0E], input[0x0F]];
+    let serial: u32 = bytemuck::must_cast(serial_section);
+
+    // if the serial is zero
+    let serial_number = if serial == 0 { None } else { Some(serial) };
+
+    /* two more bytes for week/year!
+        - week:
+            - 0x00: no week specified
+            - 0xFF: year byte indicates model year
+            - others: week from 1-54th week of year
+        - year
+    */
+    let week_byte = input[0x10];
+
+    // the week is optional. 0x00 means "none"
+    let week = if week_byte == 0x00 {
+        None
+    } else {
+        Some(week_byte)
+    };
+
+    // we add "1990" to the year to restore it from a u8
+    let year = (input[0x11] as u16) + 1990;
+
+    // determine if it's a model release or manufacturing date
+    let date = if week == Some(0xFF) {
+        // it's the model year!
+        structures::id::Date::ModelYear(year)
+    } else {
+        // it's the year of manufacture.
+        structures::id::Date::Manufacture { week, year }
+    };
+
+    // construct the info!
+    Ok(VendorProductId {
+        manufacturer_name,
+        product_code,
+        serial_number,
+        date,
+    })
+}
+
+/// Gets the vendor (company) name from the given input.
+///
+/// The input should always be exactly two elements long, containing three
+/// 5-bit ASCII values.
+#[tracing::instrument]
+fn vendor(input: &mut [u8; 2]) -> PResult<ArrayString<{ pnpid::MAX_LEN }>> {
+    // Creates a PNP ID.
+    let mut get_id = || -> Option<ArrayString<3>> {
+        let bits = input[0..=1].view_bits_mut::<Msb0>();
+
+        // make an array of "u5" (chunks of five bits) casted to u8
+        let mut bits = bits[1..16].chunks(5);
+        let arr = [
+            bits.next()?.load_be::<u8>(),
+            bits.next()?.load_be::<u8>(),
+            bits.next()?.load_be::<u8>(),
+        ];
+
+        tracing::trace!("Found all three `u5` values. ({:#?})", &arr);
+
+        let chars = convert_5bit_ascii_slice(arr)?;
+        tracing::trace!("Successfully converted into a char array. ({:#?})", &chars);
+
+        // we'll make an arrayvec::ArrayString. that can become a &str
+        let mut string: ArrayString<3> = ArrayString::new_const();
+        string.push(chars[0]);
+        string.push(chars[1]);
+        string.push(chars[2]);
+        tracing::trace!("Created ArrayString. (`{}`)", string);
+
+        Some(string)
+    };
+
+    // finally, the company name
+    get_id()
+        .and_then(|id| {
+            tracing::debug!("Got a PNP ID! (`{id}`)");
+            pnpid::company_from_pnp_id(id.as_str()).and_then(|s| {
+                tracing::debug!("Got a company name! (`{s}`)");
+                ArrayString::<{ pnpid::MAX_LEN }>::from(s)
+                    .inspect_err(|e| {
+                        tracing::error!("Couldn't fit company name into ArrayString! (err: {e})")
+                    })
+                    .ok()
+            })
+        })
+        .ok_or_else(|| {
+            tracing::error!("failed to create the PNP ID!");
+            ErrMode::from_error_kind(&input.as_slice(), winnow::error::ErrorKind::Verify)
+        })
+}
+
+/// Converts three u5 ASCII values into Rust `char`s.
+#[tracing::instrument]
+fn convert_5bit_ascii_slice(codes: [u8; 3]) -> Option<[char; 3]> {
+    Some([
+        convert_5bit_ascii(codes[0])?,
+        convert_5bit_ascii(codes[1])?,
+        convert_5bit_ascii(codes[2])?,
+    ])
+}
+
+/// Converts the compressed 5-bit ASCII code into a standard Rust character.
+#[tracing::instrument]
+fn convert_5bit_ascii(code: u8) -> Option<char> {
+    const CODES: [char; 26] = [
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+        'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+    ];
+
+    // we don't index by zero
+    if code == 0 {
+        tracing::error!("Attempted to get the zeroth letter in ASCII, but this isn't correct.");
+        return None;
+    }
+
+    if let Some(c) = CODES.get((code - 1) as usize) {
+        tracing::debug!("Got a char! (code: `{code}`, char: `{c}`)");
+        Some(*c)
+    } else {
+        tracing::error!("Passed in an invalid character identifier (`{code}`).");
+        None
+    }
+}
