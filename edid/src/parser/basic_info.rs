@@ -115,6 +115,34 @@ fn reports_gamma(input: &[u8]) -> bool {
 fn feature_support(input: &[u8]) -> PResult<FeatureSupport> {
     todo!()
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::structures::basic_info::vsi::{
+        digital::{ColorBitDepth, SupportedVideoInterface},
+        VideoSignalInterface,
+    };
+
+    #[test]
+    fn dell_s2417dg_vsi() {
+        let input = crate::prelude::internal::raw_edid_by_filename("dell_s2417dg.raw.input");
+        let got = super::video_input_definition(input[0x14]).unwrap();
+
+        let expected = VideoSignalInterface::Digital {
+            color_bit_depth: ColorBitDepth::D8Bits,
+            supported_interface: Some(SupportedVideoInterface::DisplayPort),
+        };
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn that_guys_laptop_vsi() {
+        let input = crate::prelude::internal::edid_by_filename("1.input");
+        let got = super::video_input_definition(input[0x14]).unwrap();
+
+        let expected = VideoSignalInterface::Digital {
+            color_bit_depth: ColorBitDepth::D6Bits,
             supported_interface: None,
         };
 
