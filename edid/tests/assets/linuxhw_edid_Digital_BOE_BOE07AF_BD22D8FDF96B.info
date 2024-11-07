@@ -1,0 +1,3 @@
+https://github.com/linuxhw/EDID/blob/98bc7d6e2c0eaad61346a8bf877b562fee16efc3/Digital/BOE/BOE07AF/BD22D8FDF96B#L4
+
+note that this contains an aspect ratio instead of a size (pretty rare i guess). so i use it to test the screen size + ratio parsing

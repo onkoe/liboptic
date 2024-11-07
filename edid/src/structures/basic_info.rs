@@ -5,9 +5,10 @@
 pub struct BasicDisplayInfo {
     input_definition: vsi::VideoSignalInterface,
 
-    /// the screen size or aspect ratio. the display may only report
-    /// its aspect ratio or nothing at all!
-    screen_size_or_aspect_ratio: SizeOrRatio,
+    /// The screen size or aspect ratio.
+    ///
+    /// May not report any values if its a projector.
+    screen_size_or_aspect_ratio: Option<SizeOrRatio>,
 
     /// Whether the device reports a gamma value in an extension block.
     reports_gamma: bool,
@@ -109,23 +110,15 @@ pub mod vsi {
     }
 }
 
-/// The screen size or aspect ratio of a device, if applicable.
+/// The screen size or aspect ratio of a device, if given.
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub enum SizeOrRatio {
-    ScreenSize {
-        vertical_cm: u8,
-        horizontal_cm: u8,
-    },
+    /// The screen size in centimeters (cm).
+    ScreenSize { vertical_cm: u8, horizontal_cm: u8 },
 
-    AspectRatio {
-        vertical: u8,
-        horizontal: u8,
-    },
-
-    /// This device either does not report these values, or the display
-    /// doesn't have a static value for them.
-    Inapplicable,
+    /// Just an aspect ratio.
+    AspectRatio { horizontal: u16, vertical: u16 },
 }
 
 pub mod feature_support {
