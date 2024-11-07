@@ -1,4 +1,5 @@
 use bitvec::{order::Lsb0, slice::BitSlice};
+use fraction::GenericFraction;
 use winnow::PResult;
 
 use crate::structures::basic_info::{
@@ -49,7 +50,7 @@ fn video_input_definition(byte: u8) -> PResult<VideoSignalInterface> {
                 (false, true, false, true) => SupportedVideoInterface::DisplayPort,
                 reserved => {
                     tracing::error!("Got an unexpected digital video interface standard bit layout: `{reserved:#?}`");
-                    unreachable!()
+                    unreachable!();
                 }
             })
         };
@@ -102,8 +103,90 @@ fn video_input_definition(byte: u8) -> PResult<VideoSignalInterface> {
 }
 
 #[tracing::instrument]
-fn size_or_ratio(input: &[u8]) -> PResult<SizeOrRatio> {
-    todo!()
+fn size_or_ratio(input: &[u8]) -> Option<SizeOrRatio> {
+    match (input[0x15], input[0x16]) {
+        // when both are 0x00, the screen's size isn't given or may be dynamic
+        (0x00, 0x00) => None,
+
+        // if vertical is 0x00, then horizontal is the landscape aspect ratio
+        (horizontal, 0x00) => {
+            tracing::debug!("landscape aspect ratio, given: `0x{horizontal:x}` (`{horizontal}`)");
+            /* correct but limited to 1/100th
+
+            let horiz_ar = (horizontal as u16) + 99;
+
+            // we now know it's (horiz_ar : 1). simplify in fraction.
+            let frac = GenericFraction::<u16>::new(horiz_ar, 100_u16); */
+
+            let (hoz, vert) = make_ratio(horizontal)?;
+
+            Some(SizeOrRatio::AspectRatio {
+                horizontal: hoz,
+                vertical: vert,
+            })
+        }
+
+        // now if horizontal is 0x00, we know to expect portrait orientation
+        (0x00, vertical) => {
+            tracing::debug!("portrait aspect ratio, given: `0x{vertical:x}` (`{vertical}`)");
+
+            // let vert_ar = ((vertical as u16) * 100) - 99;
+            // let frac = GenericFraction::<u16>::new(vert_ar, 100_u16);
+
+            let (vert, hoz) = make_ratio(vertical)?;
+
+            Some(SizeOrRatio::AspectRatio {
+                horizontal: hoz,
+                vertical: vert,
+            })
+        }
+
+        // both are greater than zero, so we've got two cm counts
+        (horizontal_cm, vertical_cm) => Some(SizeOrRatio::ScreenSize {
+            vertical_cm,
+            horizontal_cm,
+        }),
+    }
+}
+
+/// Makes an aspect ratio with the rounded EDID val: `?.xyz` => xyz_u8 (`ar)`.
+///
+/// To get landscape, pattern match the return value as `(hoz, vert)`. For
+/// portrait, it's `(vert, hoz)`.
+#[tracing::instrument]
+fn make_ratio(ar: u8) -> Option<(u16, u16)> {
+    // note: these values are calculated by dividing one side by the other,
+    // then rounding to three decimal places.
+    //
+    // that works because `ar` is just those remaining decimal digits.
+    // however, that also limits the ratio from (1:1 to 3.55:1), which
+    // doesn't account for loooong displays.
+    //
+    // in addition, 1:1 (square) displays are not representable.
+    //
+    // i believe this is a limitation of the standard. (hopefully fixed in
+    // displayid!)
+    Some(match ar {
+        0x00 => unreachable!(),
+        0x4F => (16, 9),
+        0x3D => (16, 10),
+        0x22 => (4, 3),
+        0x1A => (5, 4),
+        0x05 => (3, 2),
+        134 => (21, 9),
+        _ => {
+            if ar == 255 {
+                tracing::warn!(
+                    "Attempted to find EDID aspect ratio for monitor with ratio at 3.55:1.\
+                Note that this display may have a different aspect ratio."
+                );
+            }
+
+            let horiz_ar = 100 + (ar as u16);
+            let frac = GenericFraction::<u16>::new(horiz_ar, 100_u16);
+            (*frac.numer()?, *frac.denom()?)
+        }
+    })
 }
 
 #[tracing::instrument]
@@ -118,13 +201,23 @@ fn feature_support(input: &[u8]) -> PResult<FeatureSupport> {
 
 #[cfg(test)]
 mod tests {
-    use crate::structures::basic_info::vsi::{
-        digital::{ColorBitDepth, SupportedVideoInterface},
-        VideoSignalInterface,
+    use crate::{
+        parser::{
+            basic_info::make_ratio,
+            util::{edid_by_filename, logger},
+        },
+        structures::basic_info::{
+            vsi::{
+                digital::{ColorBitDepth, SupportedVideoInterface},
+                VideoSignalInterface,
+            },
+            SizeOrRatio,
+        },
     };
 
     #[test]
     fn dell_s2417dg_vsi() {
+        logger();
         let input = crate::prelude::internal::raw_edid_by_filename("dell_s2417dg.raw.input");
         let got = super::video_input_definition(input[0x14]).unwrap();
 
@@ -138,6 +231,7 @@ mod tests {
 
     #[test]
     fn that_guys_laptop_vsi() {
+        logger();
         let input = crate::prelude::internal::edid_by_filename("1.input");
         let got = super::video_input_definition(input[0x14]).unwrap();
 
@@ -147,5 +241,65 @@ mod tests {
         };
 
         assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn dell_s2417dg_sizeratio() {
+        logger();
+        let input = crate::prelude::internal::raw_edid_by_filename("dell_s2417dg.raw.input");
+        let got = super::size_or_ratio(&input).unwrap();
+
+        let expected = SizeOrRatio::ScreenSize {
+            vertical_cm: 30,
+            horizontal_cm: 53,
+        };
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn that_guys_laptop_sizeratio() {
+        logger();
+        let input = crate::prelude::internal::edid_by_filename("1.input");
+        let got = super::size_or_ratio(&input).unwrap();
+
+        let expected = SizeOrRatio::ScreenSize {
+            vertical_cm: 17,
+            horizontal_cm: 29,
+        };
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn display_w_aspect_ratio() {
+        logger();
+        let input = edid_by_filename("linuxhw_edid_Digital_BOE_BOE07AF_BD22D8FDF96B.input");
+        let got = super::size_or_ratio(&input).unwrap();
+
+        let expected = SizeOrRatio::AspectRatio {
+            horizontal: 16,
+            vertical: 9,
+        };
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn lotta_aspect_ratios() {
+        let _get_ar_val = |x: u8, y: u8| ((x as f32 / y as f32) * 100.0) - 99.0;
+        // panic!("{}", _get_ar_val(33, 23));
+
+        assert_eq!(make_ratio(79_u8), Some((16, 9)));
+        assert_eq!(make_ratio(61_u8), Some((16, 10)));
+        assert_eq!(make_ratio(34_u8), Some((4, 3)));
+        assert_eq!(make_ratio(26_u8), Some((5, 4)));
+        assert_eq!(make_ratio(5_u8), Some((3, 2)));
+        assert_eq!(make_ratio(134_u8), Some((21, 9)));
+
+        // some weird ones i pulled outta my ass
+        assert_eq!(make_ratio(16_u8), Some((29, 25)));
+        assert_eq!(make_ratio(45_u8), Some((29, 20)));
+        assert_eq!(make_ratio(255_u8), Some((71, 20))); // i would so buy this
     }
 }
