@@ -96,9 +96,9 @@ fn video_input_definition(byte: u8) -> PResult<VideoSignalInterface> {
 
     // 0 if analog, 1 if digital
     if bits[7] {
-        Ok(digital(&bits))
+        Ok(digital(bits))
     } else {
-        Ok(analog(&bits))
+        Ok(analog(bits))
     }
 }
 
@@ -111,13 +111,6 @@ fn size_or_ratio(input: &[u8]) -> Option<SizeOrRatio> {
         // if vertical is 0x00, then horizontal is the landscape aspect ratio
         (horizontal, 0x00) => {
             tracing::debug!("landscape aspect ratio, given: `0x{horizontal:x}` (`{horizontal}`)");
-            /* correct but limited to 1/100th
-
-            let horiz_ar = (horizontal as u16) + 99;
-
-            // we now know it's (horiz_ar : 1). simplify in fraction.
-            let frac = GenericFraction::<u16>::new(horiz_ar, 100_u16); */
-
             let (hoz, vert) = make_ratio(horizontal)?;
 
             Some(SizeOrRatio::AspectRatio {
@@ -129,10 +122,6 @@ fn size_or_ratio(input: &[u8]) -> Option<SizeOrRatio> {
         // now if horizontal is 0x00, we know to expect portrait orientation
         (0x00, vertical) => {
             tracing::debug!("portrait aspect ratio, given: `0x{vertical:x}` (`{vertical}`)");
-
-            // let vert_ar = ((vertical as u16) * 100) - 99;
-            // let frac = GenericFraction::<u16>::new(vert_ar, 100_u16);
-
             let (vert, hoz) = make_ratio(vertical)?;
 
             Some(SizeOrRatio::AspectRatio {
