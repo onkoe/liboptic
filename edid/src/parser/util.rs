@@ -18,8 +18,7 @@ pub(crate) fn edid_by_filename(name: &str) -> alloc::vec::Vec<u8> {
         std::path::PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/assets")).join(name);
     let s = std::fs::read_to_string(path)
         .unwrap()
-        .replace(' ', "")
-        .replace('\n', "");
+        .replace([' ', '\n'], "");
     hex::decode(s.trim()).unwrap()
 }
 
