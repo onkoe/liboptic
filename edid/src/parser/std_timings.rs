@@ -3,6 +3,7 @@ use bitvec::{field::BitField, view::BitView};
 use crate::prelude::internal::*;
 
 /// Finds the standard timings for this display.
+#[tracing::instrument]
 pub(crate) fn parse(input: &[u8]) -> StandardTimings {
     // yeah im not using unsafe to avoid the array here. hardcoding it is :D
     StandardTimings {
@@ -20,6 +21,7 @@ pub(crate) fn parse(input: &[u8]) -> StandardTimings {
 /// Checks the info of the given standard timing.
 ///
 /// Make sure the given bytes are correctly aligned.
+#[tracing::instrument]
 fn one(bytes: &[u8]) -> STiming {
     // from [8, 2288] px
     let horizontal_addr_pixel_ct = hoz_addr_pixels(bytes[0]);
@@ -45,6 +47,7 @@ fn one(bytes: &[u8]) -> STiming {
 }
 
 /// Finds the number of horizontal addressable pixels from the given value.
+#[tracing::instrument]
 fn hoz_addr_pixels(ct: u8) -> u16 {
     if ct == 0x00 {
         unreachable!("hoz addr pixels... reserved: do not use");
