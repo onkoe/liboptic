@@ -23,6 +23,17 @@ pub fn parse(input: &mut &[u8]) -> Result<Edid, EdidError> {
     // edid standard version + revision
     let _rnv = version::parse(input)?;
 
+    // construct the type
+    // (todo)
+
+    // finalized checks
+    if input[0x18] == 1 {
+        todo!(
+            "Ensure Display Range Limits are included as a block in the base \
+        EDID. See pg. 40, table 3.26, note 1."
+        )
+    }
+
     todo!()
 }
 
