@@ -2,14 +2,14 @@
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct StandardTimings {
-    pub st1: STiming,
-    pub st2: STiming,
-    pub st3: STiming,
-    pub st4: STiming,
-    pub st5: STiming,
-    pub st6: STiming,
-    pub st7: STiming,
-    pub st8: STiming,
+    pub st1: Option<STiming>,
+    pub st2: Option<STiming>,
+    pub st3: Option<STiming>,
+    pub st4: Option<STiming>,
+    pub st5: Option<STiming>,
+    pub st6: Option<STiming>,
+    pub st7: Option<STiming>,
+    pub st8: Option<STiming>,
 }
 
 /// One standard timing.
