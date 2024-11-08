@@ -14,7 +14,7 @@ pub(crate) fn parse(input: &[u8]) -> PResult<EdidVersion> {
             "This crate hasn't yet been tested above EDID v{}.{}.",
             crate::LATEST_SUPPORTED_VERSION,
             crate::LATEST_SUPPORTED_REVISION
-        )
+        );
     }
 
     Ok(EdidVersion { version, revision })

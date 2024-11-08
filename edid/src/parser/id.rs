@@ -114,7 +114,7 @@ fn vendor(input: &mut [u8; 2]) -> PResult<ArrayString<{ pnpid::MAX_LEN }>> {
                 tracing::debug!("Got a company name! (`{s}`)");
                 ArrayString::<{ pnpid::MAX_LEN }>::from(s)
                     .inspect_err(|e| {
-                        tracing::error!("Couldn't fit company name into ArrayString! (err: {e})")
+                        tracing::error!("Couldn't fit company name into ArrayString! (err: {e})");
                     })
                     .ok()
             })
