@@ -4,16 +4,14 @@
 
 use arrayvec::ArrayString;
 use bitvec::{field::BitField, order::Msb0, view::BitView};
-use winnow::{
-    error::{ErrMode, ParserError as _},
-    prelude::*,
-};
 
 use crate::structures::{self, id::VendorProductId};
 
+use crate::prelude::internal::*;
+
 /// Parses out the `VendorProductId` given the raw input.
 #[tracing::instrument]
-pub(super) fn parse(input: &[u8]) -> PResult<VendorProductId> {
+pub(super) fn parse(input: &[u8]) -> Result<VendorProductId, EdidError> {
     // the first two bytes are the manufacturer name
     let manufacturer_name = vendor(&mut [input[0x08], input[0x09]])?;
 
@@ -78,57 +76,55 @@ pub(super) fn parse(input: &[u8]) -> PResult<VendorProductId> {
 /// The input should always be exactly two elements long, containing three
 /// 5-bit ASCII values.
 #[tracing::instrument]
-fn vendor(input: &mut [u8; 2]) -> PResult<ArrayString<{ pnpid::MAX_LEN }>> {
-    // Creates a PNP ID.
-    let mut get_id = || -> Option<ArrayString<3>> {
-        let bits = input[0..=1].view_bits_mut::<Msb0>();
+fn vendor(input: &mut [u8; 2]) -> Result<ArrayString<{ pnpid::MAX_LEN }>, EdidError> {
+    // let's grab the PNP ID.
+    let bits = input[0..=1].view_bits_mut::<Msb0>();
 
-        // make an array of "u5" (chunks of five bits) casted to u8
-        let mut bits = bits[1..16].chunks(5);
-        let arr = [
+    // make an array of "u5" (chunks of five bits) casted to u8
+    let mut bits = bits[1..16].chunks(5);
+    let arr = (|| {
+        Some([
             bits.next()?.load_be::<u8>(),
             bits.next()?.load_be::<u8>(),
             bits.next()?.load_be::<u8>(),
-        ];
+        ])
+    })()
+    .ok_or_else(|| {
+        tracing::error!("Failed to load required bits for PNP ID parsing.");
+        EdidError::NoMatchingManufacturer(ArrayString::new_const())
+    })?;
+    tracing::trace!("Found all three `u5` values. ({:#?})", &arr);
 
-        tracing::trace!("Found all three `u5` values. ({:#?})", &arr);
+    // convert it into rust (ascii) chars
+    let chars = convert_5bit_ascii_slice(arr)?;
+    tracing::trace!("Successfully converted into a char array. ({:#?})", &chars);
 
-        let chars = convert_5bit_ascii_slice(arr)?;
-        tracing::trace!("Successfully converted into a char array. ({:#?})", &chars);
+    // we'll make an arrayvec::ArrayString. that can become a &str
+    let mut string: ArrayString<3> = ArrayString::new_const();
+    string.push(chars[0]);
+    string.push(chars[1]);
+    string.push(chars[2]);
+    tracing::trace!("Created ArrayString. (`{}`)", string);
 
-        // we'll make an arrayvec::ArrayString. that can become a &str
-        let mut string: ArrayString<3> = ArrayString::new_const();
-        string.push(chars[0]);
-        string.push(chars[1]);
-        string.push(chars[2]);
-        tracing::trace!("Created ArrayString. (`{}`)", string);
+    // let's try to find the its name from their pnp id
+    let company_name = pnpid::company_from_pnp_id(string.as_str()).ok_or_else(|| {
+        tracing::error!("Failed to find company name from the EDID's PNP ID: `{string}`.");
+        EdidError::NoMatchingManufacturer(string)
+    })?;
 
-        Some(string)
-    };
+    tracing::debug!("Got a company name! (`{company_name}`)");
 
-    // finally, the company name
-    get_id()
-        .and_then(|id| {
-            tracing::debug!("Got a PNP ID! (`{id}`)");
-            pnpid::company_from_pnp_id(id.as_str()).and_then(|s| {
-                tracing::debug!("Got a company name! (`{s}`)");
-                ArrayString::<{ pnpid::MAX_LEN }>::from(s)
-                    .inspect_err(|e| {
-                        tracing::error!("Couldn't fit company name into ArrayString! (err: {e})");
-                    })
-                    .ok()
-            })
-        })
-        .ok_or_else(|| {
-            tracing::error!("failed to create the PNP ID!");
-            ErrMode::from_error_kind(&input.as_slice(), winnow::error::ErrorKind::Verify)
-        })
+    // finally, return the company name
+    ArrayString::<{ pnpid::MAX_LEN }>::from(company_name).map_err(|e| {
+        tracing::error!("Couldn't fit company name into ArrayString! (err: {e})");
+        EdidError::ArrayStringError
+    })
 }
 
 /// Converts three u5 ASCII values into Rust `char`s.
 #[tracing::instrument]
-fn convert_5bit_ascii_slice(codes: [u8; 3]) -> Option<[char; 3]> {
-    Some([
+fn convert_5bit_ascii_slice(codes: [u8; 3]) -> Result<[char; 3], EdidError> {
+    Ok([
         convert_5bit_ascii(codes[0])?,
         convert_5bit_ascii(codes[1])?,
         convert_5bit_ascii(codes[2])?,
@@ -137,7 +133,7 @@ fn convert_5bit_ascii_slice(codes: [u8; 3]) -> Option<[char; 3]> {
 
 /// Converts the compressed 5-bit ASCII code into a standard Rust character.
 #[tracing::instrument]
-fn convert_5bit_ascii(code: u8) -> Option<char> {
+fn convert_5bit_ascii(code: u8) -> Result<char, EdidError> {
     const CODES: [char; 26] = [
         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
         'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -146,15 +142,15 @@ fn convert_5bit_ascii(code: u8) -> Option<char> {
     // we don't index by zero
     if code == 0 {
         tracing::error!("Attempted to get the zeroth letter in ASCII, but this isn't correct.");
-        return None;
+        return Err(EdidError::IdNoZeroesAllowed);
     }
 
     if let Some(c) = CODES.get((code - 1) as usize) {
         tracing::debug!("Got a char! (code: `{code}`, char: `{c}`)");
-        Some(*c)
+        Ok(*c)
     } else {
         tracing::error!("Passed in an invalid character identifier (`{code}`).");
-        None
+        Err(EdidError::CharOutOfBounds(code))
     }
 }
 
@@ -224,7 +220,7 @@ mod tests {
 
         // we're one-indexed, not zero-indexed. so 0x0 should fail
         let zero = convert_5bit_ascii(0b00000);
-        assert!(zero.is_none());
+        assert!(zero.is_err());
 
         // we'll also check every letter, just to be safe.
         let chars = 'A'..='Z';

@@ -1,21 +1,9 @@
 use bitvec::{order::Lsb0, slice::BitSlice};
 use fraction::{Decimal, GenericFraction};
-use winnow::PResult;
-
-use crate::structures::basic_info::{
-    feature_support::{
-        ColorEncodingFormats, ColorSupport, ColorType, FeatureSupport, PowerManagement,
-    },
-    vsi::{
-        analog,
-        digital::{ColorBitDepth, SupportedVideoInterface},
-        VideoSignalInterface,
-    },
-    BasicDisplayInfo, SizeOrRatio,
-};
+use crate::prelude::internal::*;
 
 #[tracing::instrument]
-pub(super) fn parse(input: &[u8]) -> PResult<BasicDisplayInfo> {
+pub(super) fn parse(input: &[u8]) -> BasicDisplayInfo {
     let _input_def = video_input_definition(input[0x14]);
     todo!()
 }

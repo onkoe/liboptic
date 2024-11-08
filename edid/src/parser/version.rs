@@ -1,10 +1,10 @@
-use winnow::PResult;
-
 use crate::structures::version::EdidVersion;
+
+use crate::prelude::internal::*;
 
 /// Parses out the EDID version info.
 #[tracing::instrument]
-pub(crate) fn parse(input: &[u8]) -> PResult<EdidVersion> {
+pub(crate) fn parse(input: &[u8]) -> Result<EdidVersion, EdidError> {
     let version = input[0x12];
     let revision = input[0x13];
 
