@@ -1,5 +1,6 @@
 mod basic_info;
 mod color;
+mod est_timings;
 mod header;
 mod id;
 pub(super) mod util;
