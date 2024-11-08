@@ -1,5 +1,6 @@
 use crate::prelude::internal::*;
 
+mod descriptors;
 mod preferred_tm;
 
 #[tracing::instrument(skip_all)]
