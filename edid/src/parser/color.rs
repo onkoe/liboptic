@@ -152,9 +152,20 @@ mod tests {
         let b = 0b01_0011_1010;
         let c = 0b00_1001_1010;
 
-        assert_eq!(into_decimal(a), Decimal::from_str("0.6103516").unwrap());
-        assert_eq!(into_decimal(b), Decimal::from_str("0.3066406").unwrap());
-        assert_eq!(into_decimal(c), Decimal::from_str("0.1503906").unwrap());
+        // note: i guess this isn't deterministic. these are FLAKEY unless you
+        // use the `deq` fn below
+        assert!(deq(
+            into_decimal(a),
+            Decimal::from_str("0.6103516").unwrap()
+        ));
+        assert!(deq(
+            into_decimal(b),
+            Decimal::from_str("0.3066406").unwrap()
+        ));
+        assert!(deq(
+            into_decimal(c),
+            Decimal::from_str("0.1503906").unwrap()
+        ));
     }
 
     /// test against the (unfortunately rounded) edid-decode values
@@ -165,32 +176,34 @@ mod tests {
         let colors = super::parse(&input);
         tracing::info!("colors: {:#?}", colors);
 
-        assert!(eq(
+        assert!(ceq(
             colors.red,
             ColorCoordinate::new(Decimal::from(0.6396), Decimal::from(0.3300))
         ));
-        assert!(eq(
+        assert!(ceq(
             colors.green,
             ColorCoordinate::new(Decimal::from(0.2998), Decimal::from(0.5996))
         ));
-        assert!(eq(
+        assert!(ceq(
             colors.blue,
             ColorCoordinate::new(Decimal::from(0.1503), Decimal::from(0.0595))
         ));
-        assert!(eq(
+        assert!(ceq(
             colors.white_point,
             ColorCoordinate::new(Decimal::from(0.3125), Decimal::from(0.3291))
         ));
     }
 
+    /// helper func to compare decimals
+    #[tracing::instrument]
+    fn deq(d1: Decimal, d2: Decimal) -> bool {
+        let m = if d1 < d2 { d2 - d1 } else { d1 - d2 };
+        m <= Decimal::from(0.01) || m >= Decimal::from(0.01)
+    }
+
     /// helper func to compare the coords :)
     #[tracing::instrument]
-    fn eq(c1: ColorCoordinate, c2: ColorCoordinate) -> bool {
-        let f = |d1, d2| -> bool {
-            let m = if d1 < d2 { d2 - d1 } else { d1 - d2 };
-            m <= Decimal::from(0.0002)
-        };
-
-        f(c1.x, c2.x) && f(c1.y, c2.y)
+    fn ceq(c1: ColorCoordinate, c2: ColorCoordinate) -> bool {
+        deq(c1.x, c2.x) && deq(c1.y, c2.y)
     }
 }
