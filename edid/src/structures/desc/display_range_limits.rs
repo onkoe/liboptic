@@ -58,7 +58,7 @@ pub enum RangeLimitsDesc {
         cvt_version: u8,
 
         /// Optional since there can be "no limit".
-        maximum_active_pxls_per_line: Option<u32>,
+        maximum_active_pxls_per_line: Option<u16>,
         supported_aspect_ratios: SupportedAspectRatios,
         preferred_aspect_ratio: PreferredAspectRatio,
 

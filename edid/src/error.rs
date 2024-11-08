@@ -2,7 +2,7 @@ extern crate alloc;
 use alloc::format;
 use arrayvec::ArrayString;
 
-use core::{array::TryFromSliceError, error::Error};
+use core::{array::TryFromSliceError, error::Error, fmt::Debug};
 use pisserror::Error;
 
 /// An error that occurred while parsing EDID.
@@ -33,13 +33,24 @@ pub enum EdidError {
     AmbiguousDescriptor { malformed_byte: u8 },
     #[error("This EDID contained a reserved descriptor kind byte: `{kind_byte}`.")]
     DescriptorUsedReservedKind { kind_byte: u8 },
+    #[error("Range limits descriptor found reserved bits set: `{input:x?}`.")]
+    DescriptorRangeLimitsUsedReservedBits {
+        /// the input byte.
+        input: u8,
+    },
+    #[error("Range limits descriptor contained a reserved video timing support flag: `{flag}`.")]
+    DescriptorRangeLimitsUsedReservedVTSFlag { flag: u8 },
+    #[error("Range limits descriptor (CVT) contained reserved values.")]
+    DescriptorRangeLimitsCvtReservedBits,
 
     // misc (logic errors that were noticed in other crates)
     #[error("An ArrayString had an overflow. Please report this alongside any logs.")]
     ArrayStringError,
     #[error("Failed to convert slice into array. (err: {_0})")]
     TryFromSlice(#[from] TryFromSliceError),
+    #[error(
+        "Couldn't represent given number as binary-coded decimal. Please \
+    report this alongside any logs."
+    )]
+    BcdError,
 }
-
-#[derive(Clone, Debug, PartialEq, PartialOrd, Error)]
-pub enum IdError {}

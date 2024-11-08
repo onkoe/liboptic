@@ -9,6 +9,8 @@ fn main() {
 
     use std::format as f;
 
+    println!("for file: `{PATH}`...\n");
+
     println!("{}", f!("Header: {:x?}", &info[0x00..0x08]).blue());
     println!(
         "{}",

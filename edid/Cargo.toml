@@ -17,6 +17,7 @@ fraction = { version = "0.15.3", default-features = false, features = [
     "with-decimal",
 ] }
 pisserror = { version = "0.3.0-rc.1", default-features = false }
+nobcd = { version = "0.2.0", features = ["defmt"] }
 
 [dev-dependencies]
 colored = "2.1.0"
