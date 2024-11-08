@@ -2,11 +2,11 @@ extern crate alloc;
 use alloc::format;
 use arrayvec::ArrayString;
 
-use core::error::Error;
+use core::{array::TryFromSliceError, error::Error};
 use pisserror::Error;
 
 /// An error that occurred while parsing EDID.
-#[derive(Clone, Debug, PartialEq, PartialOrd, Error)]
+#[derive(Clone, Debug, Error)]
 pub enum EdidError {
     #[error("The given EDID data isn't long enough.")]
     TooShort { got: u8, expected: u8 },
@@ -28,6 +28,8 @@ pub enum EdidError {
     // misc (logic errors that were noticed in other crates)
     #[error("An ArrayString had an overflow. Please report this alongside any logs.")]
     ArrayStringError,
+    #[error("Failed to convert slice into array. (err: {_0})")]
+    TryFromSlice(#[from] TryFromSliceError),
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Error)]
