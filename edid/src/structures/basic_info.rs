@@ -129,21 +129,21 @@ pub mod feature_support {
     #[repr(C)]
     #[derive(Clone, Debug, PartialEq, PartialOrd)]
     pub struct FeatureSupport {
-        power_management: PowerManagement,
+        pub power_management: PowerManagement,
         //
         // IMPLEMENTATION NOTE: we get "color type" if VideoSignalInterface::Analog,
         // otherwise we check for encoding formats
-        color_support: ColorSupport,
+        pub color_support: ColorSupport,
 
         /// Whether sRGB Standard is the default color space.
-        srgb_std: bool,
+        pub srgb_std: bool,
 
         /// Whether the Preferred Timing Mode has info about the native
         /// pixel format and preferred refresh rate for the display.
-        says_pixel_format_and_refresh: bool,
+        pub says_pixel_format_and_refresh: bool,
 
         /// Whether the display is continuous-frequency.
-        is_continuous_freq: bool,
+        pub is_continuous_freq: bool,
     }
 
     /// Supported power modes.
@@ -155,9 +155,9 @@ pub mod feature_support {
     #[repr(C)]
     #[derive(Clone, Debug, PartialEq, PartialOrd)]
     pub struct PowerManagement {
-        standby: bool,
-        suspend: bool,
-        active_off: bool,
+        pub standby: bool,
+        pub suspend: bool,
+        pub active_off: bool,
     }
 
     #[repr(C)]
