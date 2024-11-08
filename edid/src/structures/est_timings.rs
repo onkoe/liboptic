@@ -6,9 +6,9 @@
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct EstablishedTimings {
-    i: EstablishedTimingsI,
-    ii: EstablishedTimingsII,
-    manufacturer_timings: ManufacturerTimings,
+    pub i: EstablishedTimingsI,
+    pub ii: EstablishedTimingsII,
+    pub manufacturer_timings: ManufacturerTimings,
 }
 
 /* Established Timing I
@@ -24,14 +24,14 @@ pub struct EstablishedTimings {
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct EstablishedTimingsI {
-    _720x400_70hz: bool,
-    _720x400_88hz: bool,
-    _640x480_60hz: bool,
-    _640x480_67hz: bool,
-    _640x480_72hz: bool,
-    _640x480_75hz: bool,
-    _800x600_56hz: bool,
-    _800x600_60hz: bool,
+    pub _720x400_70hz: bool,
+    pub _720x400_88hz: bool,
+    pub _640x480_60hz: bool,
+    pub _640x480_67hz: bool,
+    pub _640x480_72hz: bool,
+    pub _640x480_75hz: bool,
+    pub _800x600_56hz: bool,
+    pub _800x600_60hz: bool,
 }
 
 /* Established Timing II
@@ -47,14 +47,14 @@ pub struct EstablishedTimingsI {
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct EstablishedTimingsII {
-    _800x600_72hz: bool,
-    _800x600_75hz: bool,
-    _832x624_75hz: bool,
-    _1024x768_87hz_interlaced: bool,
-    _1024x768_60hz: bool,
-    _1024x768_70hz: bool,
-    _1024x768_75hz: bool,
-    _1280x1024_75hz: bool,
+    pub _800x600_72hz: bool,
+    pub _800x600_75hz: bool,
+    pub _832x624_75hz: bool,
+    pub _1024x768_87hz_interlaced: bool,
+    pub _1024x768_60hz: bool,
+    pub _1024x768_70hz: bool,
+    pub _1024x768_75hz: bool,
+    pub _1280x1024_75hz: bool,
 }
 
 /* Manufacturer's Timings
@@ -69,12 +69,12 @@ pub struct EstablishedTimingsII {
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct ManufacturerTimings {
-    _1152x870_75hz: bool,
-    _6: bool,
-    _5: bool,
-    _4: bool,
-    _3: bool,
-    _2: bool,
-    _1: bool,
-    _0: bool,
+    pub _1152x870_75hz: bool,
+    pub _6: bool,
+    pub _5: bool,
+    pub _4: bool,
+    pub _3: bool,
+    pub _2: bool,
+    pub _1: bool,
+    pub _0: bool,
 }
