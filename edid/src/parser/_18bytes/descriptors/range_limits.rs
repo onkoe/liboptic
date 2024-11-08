@@ -286,3 +286,96 @@ fn from_bcd(input: u8) -> Result<u16, EdidError> {
     tracing::debug!("converted bcd (from: `{input}`, to: `{val}`)");
     Ok(val)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn _sam02e3_2c47316eff13_range_limits() {
+        logger();
+        let path = "linuxhw_edid_EDID_Digital_Samsung_SAM02E3_2C47316EFF13.input";
+        let input = edid_by_filename(path);
+        let bytes: [u8; 18] = input[0x48..=0x59].try_into().unwrap();
+
+        let _t: i32 = 0b0000_0000_0010_1000;
+
+        let got = parse(&bytes, &input).unwrap();
+
+        let expected = RangeLimitsDesc::GtfSupported {
+            limits: RangeLimits {
+                min_v_rate_hz: 56,
+                max_v_rate_hz: 75,
+                min_h_rate_khz: 30,
+                max_h_rate_khz: 81,
+                offsets: Offsets {
+                    vertical: VerticalOffset::Zero,
+                    horizontal: HorizontalOffset::Zero,
+                },
+                max_pixel_clock_mhz: 140,
+            },
+        };
+
+        assert_eq!(got, expected);
+    }
+
+    /**
+    this device yields bad output - it has 0x00 for both horizontal rates.
+
+    the library correctly detects this! :)
+
+        ...
+        01 01 01 01 01 01 3f 7f b0 a0 a0 20 34 70 30 20
+        3a 00 04 ad 10 00 00 19 00 00 00 fd 00 30 3c 00
+                        ^^^
+        note: these values are nonconformant.
+        ...
+
+    */
+    #[test]
+    fn lgd0555_7d17e3014129() {
+        logger();
+        let path = "bad/linuxhw_edid_EDID_Digital_LG Display_LGD0555_7D17E3014129.input";
+        let input = edid_by_filename(path);
+        let bytes: [u8; 18] = input[0x48..0x5A].try_into().unwrap();
+
+        let got = parse(&bytes, &input).unwrap();
+        tracing::info!("{:#?}", got);
+
+        let expected = RangeLimitsDesc::CvtSupported {
+            limits: RangeLimits {
+                min_v_rate_hz: 48,
+                max_v_rate_hz: 60,
+                min_h_rate_khz: 0,
+                max_h_rate_khz: 0,
+                offsets: Offsets {
+                    vertical: VerticalOffset::Zero,
+                    horizontal: HorizontalOffset::Zero,
+                },
+                max_pixel_clock_mhz: 330,
+            },
+
+            enhanced_px_clk: Decimal::from(328) + (Decimal::from(3) / 4),
+            cvt_version: 10,
+            maximum_active_pxls_per_line: Some(160),
+            supported_aspect_ratios: SupportedAspectRatios {
+                _4x3: false,
+                _16x9: false,
+                _16x10: false,
+                _5x4: true,
+                _15x9: false,
+            },
+            preferred_aspect_ratio: PreferredAspectRatio::_4x3,
+            supports_standard_cvt_blanking: false,
+            supports_reduced_cvt_blanking: true,
+            supports_h_shrink_scaling: false,
+            supports_h_stretch_scaling: false,
+            supports_v_shrink_scaling: false,
+            supports_v_stretch_scaling: true,
+            preferred_v_refresh_rate_hz: 20,
+        };
+        tracing::warn!("{:#?}", expected);
+
+        assert_eq!(got, expected);
+    }
+}
