@@ -7,12 +7,11 @@
 
 #![no_std]
 
-use structures::{_18bytes, basic_info, color, est_timings, extension, id, std_timings, version};
-use winnow::PResult;
-
 mod parser;
 mod prelude;
 pub mod structures; // TODO: re-export with prelude instead
+
+use crate::prelude::internal::*;
 
 /// The latest version of the EDID standard that this library includes support
 /// for.
