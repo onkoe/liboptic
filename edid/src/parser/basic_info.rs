@@ -267,6 +267,9 @@ mod tests {
             util::{edid_by_filename, logger},
         },
         structures::basic_info::{
+            feature_support::{
+                ColorEncodingFormats, ColorSupport, FeatureSupport, PowerManagement,
+            },
             vsi::{
                 digital::{ColorBitDepth, SupportedVideoInterface},
                 VideoSignalInterface,
@@ -392,6 +395,71 @@ mod tests {
         );
         let got = super::gamma(&input).unwrap();
         let expected = Decimal::from(1.0);
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn dell_s2417dg_feature_support() {
+        logger();
+        let input = crate::prelude::internal::raw_edid_by_filename("dell_s2417dg.raw.input");
+
+        let got = super::feature_support(&input);
+        let expected = FeatureSupport {
+            power_management: PowerManagement {
+                standby: false,
+                suspend: false,
+                active_off: false,
+            },
+            color_support: ColorSupport::EncodingFormats(ColorEncodingFormats::Rgb444),
+            srgb_std: true,
+            says_pixel_format_and_refresh: true,
+            is_continuous_freq: false,
+        };
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn that_guys_laptop_feature_support() {
+        logger();
+        let input = crate::prelude::internal::edid_by_filename("1.input");
+
+        let got = super::feature_support(&input);
+        let expected = FeatureSupport {
+            power_management: PowerManagement {
+                standby: false,
+                suspend: false,
+                active_off: false,
+            },
+            color_support: ColorSupport::EncodingFormats(ColorEncodingFormats::Rgb444),
+            srgb_std: false,
+            says_pixel_format_and_refresh: true,
+            is_continuous_freq: false,
+        };
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn _93d328459ff6_feature_support() {
+        logger();
+        let input = crate::prelude::internal::edid_by_filename(
+            "linuxhw_edid_EDID_Digital_Sony_SNY05FA_93D328459FF6.input",
+        );
+
+        let got = super::feature_support(&input);
+        let expected = FeatureSupport {
+            power_management: PowerManagement {
+                standby: true,
+                suspend: true,
+                active_off: true,
+            },
+            color_support: ColorSupport::EncodingFormats(ColorEncodingFormats::Rgb444_YCrCb444),
+            srgb_std: false,
+            says_pixel_format_and_refresh: true,
+            is_continuous_freq: false,
+        };
 
         assert_eq!(got, expected);
     }
