@@ -19,6 +19,7 @@ fraction = { version = "0.15.3", default-features = false, features = [
 pisserror = { version = "0.3.0-rc.1", default-features = false }
 
 [dev-dependencies]
+colored = "2.1.0"
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 tracing-subscriber = "0.3.18"
 
