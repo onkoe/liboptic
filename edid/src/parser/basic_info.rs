@@ -16,12 +16,12 @@ use crate::structures::basic_info::{
 
 #[tracing::instrument]
 pub(super) fn parse(input: &[u8]) -> PResult<BasicDisplayInfo> {
-    let _input_def = video_input_definition(input[0x14])?;
+    let _input_def = video_input_definition(input[0x14]);
     todo!()
 }
 
 #[tracing::instrument]
-fn video_input_definition(byte: u8) -> PResult<VideoSignalInterface> {
+fn video_input_definition(byte: u8) -> VideoSignalInterface {
     // using lsb to keep the bit numbering consistent.
     let bits: &BitSlice<u8, Lsb0> = BitSlice::from_element(&byte);
 
@@ -98,9 +98,9 @@ fn video_input_definition(byte: u8) -> PResult<VideoSignalInterface> {
 
     // 0 if analog, 1 if digital
     if bits[7] {
-        Ok(digital(bits))
+        digital(bits)
     } else {
-        Ok(analog(bits))
+        analog(bits)
     }
 }
 
@@ -282,7 +282,7 @@ mod tests {
     fn dell_s2417dg_vsi() {
         logger();
         let input = crate::prelude::internal::raw_edid_by_filename("dell_s2417dg.raw.input");
-        let got = super::video_input_definition(input[0x14]).unwrap();
+        let got = super::video_input_definition(input[0x14]);
 
         let expected = VideoSignalInterface::Digital {
             color_bit_depth: ColorBitDepth::D8Bits,
@@ -296,7 +296,7 @@ mod tests {
     fn that_guys_laptop_vsi() {
         logger();
         let input = crate::prelude::internal::edid_by_filename("1.input");
-        let got = super::video_input_definition(input[0x14]).unwrap();
+        let got = super::video_input_definition(input[0x14]);
 
         let expected = VideoSignalInterface::Digital {
             color_bit_depth: ColorBitDepth::D6Bits,
