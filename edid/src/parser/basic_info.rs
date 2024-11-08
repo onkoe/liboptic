@@ -3,7 +3,9 @@ use fraction::{Decimal, GenericFraction};
 use winnow::PResult;
 
 use crate::structures::basic_info::{
-    feature_support::FeatureSupport,
+    feature_support::{
+        ColorEncodingFormats, ColorSupport, ColorType, FeatureSupport, PowerManagement,
+    },
     vsi::{
         analog,
         digital::{ColorBitDepth, SupportedVideoInterface},
@@ -205,8 +207,54 @@ fn gamma(input: &[u8]) -> Option<Decimal> {
 }
 
 #[tracing::instrument]
-fn feature_support(input: &[u8]) -> PResult<FeatureSupport> {
-    todo!()
+fn feature_support(input: &[u8]) -> FeatureSupport {
+    // again, using `Lsb0` despite standard being Msb0.
+    //
+    // this lets me use their numbering
+    let bits: &BitSlice<u8, Lsb0> = BitSlice::from_element(&input[0x18]);
+
+    // build the power management (i.e. bools)
+    let power_management = PowerManagement {
+        standby: bits[7],
+        suspend: bits[6],
+        active_off: bits[5],
+    };
+
+    // get color based on if we're analog/digital...
+    let color_support = if BitSlice::<u8, Lsb0>::from_element(&input[0x14])[7] {
+        // digital gets a color encoding!
+        let formats = match (bits[4], bits[3]) {
+            (false, false) => ColorEncodingFormats::Rgb444,
+            (false, true) => ColorEncodingFormats::Rgb444_YCrCb444,
+            (true, false) => ColorEncodingFormats::Rgb444_YCrCb422,
+            (true, true) => ColorEncodingFormats::Rgb444_YCrCb444_YCrCb422,
+        };
+
+        ColorSupport::EncodingFormats(formats)
+    } else {
+        // if we're analog, just check the color type.
+        let ty = match (bits[4], bits[3]) {
+            (false, false) => ColorType::MonochromeOrGrayscale,
+            (false, true) => ColorType::RgbColor,
+            (true, false) => ColorType::NonRgbColor,
+            (true, true) => ColorType::Undefined,
+        };
+
+        ColorSupport::Type(ty)
+    };
+
+    // other feature support flags
+    let srgb_std = bits[2];
+    let says_pixel_format_and_refresh = bits[1];
+    let is_continuous_freq = bits[0];
+
+    FeatureSupport {
+        power_management,
+        color_support,
+        srgb_std,
+        says_pixel_format_and_refresh,
+        is_continuous_freq,
+    }
 }
 
 #[cfg(test)]
