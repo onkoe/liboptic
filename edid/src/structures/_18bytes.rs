@@ -33,34 +33,53 @@ pub mod timing {
         /// The pixel clock of the device in kHz.
         ///
         /// Range is [10, 65535] KHz, in steps of 10 kHz.
-        pixel_clock_khz: u16,
+        pub pixel_clock_khz: u16,
 
-        horizontal_addressable_video_px: u16,
-        horizontal_blanking_px: u16,
-        vertical_addressable_video_lines: u16,
-        vertical_blanking_lines: u16,
+        pub horizontal_addressable_video_px: u16,
+        pub horizontal_blanking_px: u16,
+        pub vertical_addressable_video_lines: u16,
+        pub vertical_blanking_lines: u16,
 
-        horizontal_front_porch: u16,
-        horizontal_sync_pulse_width_px: u16,
-        vertical_front_porch_lines: u16,
-        vertical_sync_pulse_width_lines: u16,
-        //
-        //
-        //
+        /// From blanking start to start of sync. Range is [0, 1023] px.
+        ///
+        /// Sometimes known as the "horizontal sync offset".
+        pub horizontal_front_porch: u16,
+        /// From the end of the front porch to the start of the back porch.
+        /// Range is [0, 1023] px.
+        pub horizontal_sync_pulse_width_px: u16,
+        /// From blanking start to start of sync. Range is [0, 63] lines.
+        ///
+        /// Sometimes known as the "vertical sync offset".
+        pub vertical_front_porch_lines: u8,
+        /// From the end of the front porch to the start of the back porch.
+        /// Range is [0, 63] lines.
+        pub vertical_sync_pulse_width_lines: u8,
+
         // video image size/border defs!
         //
-        horizontal_addressable_video_size_mm: u16,
-        vertical_addressable_video_size_mm: u16,
-        horizontal_border_px: u8,
-        vertical_border_lines: u8,
+        //
+        /// The horizontal screen size. May not be present for some kinds of
+        /// devices. Range is [0, 4095] mm.
+        ///
+        /// Note that this defines the video size of **the displayed image**,
+        /// not where light can be controlled.
+        pub horizontal_addressable_video_size_mm: Option<u16>,
+        /// The vertical screen size. May not be present for some kinds of
+        /// devices. Range is [0, 4095] mm.
+        ///
+        /// Note that this defines the video size of **the displayed image**,
+        /// not where light can be controlled.
+        pub vertical_addressable_video_size_mm: Option<u16>,
+        pub horizontal_border_px: u8,
+        pub vertical_border_lines: u8,
         //
         //
         //
         // signal (?) defs!
         //
-        signal_interface_type: SignalInterfaceType,
-        stereo_support: StereoViewingSupport,
-        sync_signal: SyncSignal,
+        pub signal_interface_type: SignalInterfaceType,
+        pub stereo_support: StereoViewingSupport,
+        pub sync_signal: SyncSignal,
     }
 
     #[repr(C)]
@@ -80,23 +99,27 @@ pub mod timing {
         FieldSequentialLeft,
         TwoWayInterleavedRight,
         TwoWayInterleavedLeft,
-        FourWayInterlaced,
+        FourWayInterleaved,
+        SideBySide,
     }
 
     #[repr(C)]
     #[derive(Clone, Debug, PartialEq, PartialOrd)]
     pub enum SyncSignal {
-        Analog(AnalogSyncSignal),
+        Analog {
+            bipolar: bool,
+            with_serrations: bool,
+            sync_mode: AnalogSyncOn,
+        },
+
         Digital(DigitalSyncSignal),
     }
 
     #[repr(C)]
     #[derive(Clone, Debug, PartialEq, PartialOrd)]
-    pub enum AnalogSyncSignal {
-        Composite,
-        Bipolar,
-        BipolarSerrationsSyncOnGreen,
-        BipolarSerrationsSyncRgb,
+    pub enum AnalogSyncOn {
+        Green,
+        Rgb,
     }
 
     #[repr(C)]
@@ -104,7 +127,8 @@ pub mod timing {
     pub enum DigitalSyncSignal {
         Composite,
         CompositeSerrations,
-        SeparateNegV,
+        SeparateNegVNegH,
+        SeparateNegVPosH,
         SeparatePosVNegH,
         SeparatePosVPosH,
     }
