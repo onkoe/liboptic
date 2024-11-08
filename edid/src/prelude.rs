@@ -11,6 +11,7 @@ pub(crate) mod internal {
     };
 
     pub use crate::std_timings::{STiming, StandardAspectRatio, StandardTimings};
+    pub use crate::structures::_18bytes::{timing::*, EighteenByteBlock, EighteenByteDescriptors};
     pub(crate) use crate::structures::basic_info::{
         feature_support::{
             ColorEncodingFormats, ColorSupport, ColorType, FeatureSupport, PowerManagement,
