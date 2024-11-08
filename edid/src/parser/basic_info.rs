@@ -1,5 +1,5 @@
 use bitvec::{order::Lsb0, slice::BitSlice};
-use fraction::GenericFraction;
+use fraction::{Decimal, GenericFraction};
 use winnow::PResult;
 
 use crate::structures::basic_info::{
@@ -102,7 +102,7 @@ fn video_input_definition(byte: u8) -> PResult<VideoSignalInterface> {
     }
 }
 
-#[tracing::instrument]
+#[tracing::instrument(skip_all)]
 fn size_or_ratio(input: &[u8]) -> Option<SizeOrRatio> {
     match (input[0x15], input[0x16]) {
         // when both are 0x00, the screen's size isn't given or may be dynamic
@@ -178,9 +178,30 @@ fn make_ratio(ar: u8) -> Option<(u16, u16)> {
     })
 }
 
-#[tracing::instrument]
-fn reports_gamma(input: &[u8]) -> bool {
-    todo!()
+/// Gets the gamma value from the given input stream.
+///
+/// Note that if this is `None`, the display should provide an extension
+/// containing the value.
+#[tracing::instrument(skip_all)]
+fn gamma(input: &[u8]) -> Option<Decimal> {
+    let byte = input[0x17];
+    tracing::debug!("Got byte: 0x{byte:x}");
+
+    if byte == 0xFF {
+        tracing::info!("Reported None. An extension with the gamma value should follow...");
+        None
+    } else {
+        if byte == 0x00 {
+            tracing::warn!(
+                "EDID 1.4 does not provide a defintion for `gamma: 0x00`, \
+                but this display is using that. This may result in an inaccurate \
+                answer."
+            );
+        }
+
+        // reverse from the standard: byte = (GAMMA x 100) – 100
+        Some((Decimal::from(byte) + 100) / 100)
+    }
 }
 
 #[tracing::instrument]
@@ -276,6 +297,7 @@ mod tests {
 
     #[test]
     fn lotta_aspect_ratios() {
+        logger();
         let _get_ar_val = |x: u8, y: u8| ((x as f32 / y as f32) * 100.0) - 99.0;
         // panic!("{}", _get_ar_val(33, 23));
 
