@@ -1,5 +1,7 @@
 //! Basic display info.
 
+use fraction::Decimal;
+
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct BasicDisplayInfo {
@@ -10,8 +12,10 @@ pub struct BasicDisplayInfo {
     /// May not report any values if its a projector.
     screen_size_or_aspect_ratio: Option<SizeOrRatio>,
 
-    /// Whether the device reports a gamma value in an extension block.
-    reports_gamma: bool,
+    /// The device's gamma value.
+    ///
+    /// If `None`, it should be in an extension block.
+    reported_gamma: Option<Decimal>,
 
     /// Info about the display's support for various misc. features.
     feature_support: feature_support::FeatureSupport,

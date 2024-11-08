@@ -14,7 +14,9 @@ arrayvec = { version = "0.7.6", default-features = false }
 bytemuck = { version = "1.19.0", default-features = false, features = [
     "must_cast",
 ] }
-fraction = { version = "0.15.3", default-features = false }
+fraction = { version = "0.15.3", default-features = false, features = [
+    "with-decimal",
+] }
 
 [dev-dependencies]
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
