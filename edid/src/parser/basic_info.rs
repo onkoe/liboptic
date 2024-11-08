@@ -211,6 +211,8 @@ fn feature_support(input: &[u8]) -> PResult<FeatureSupport> {
 
 #[cfg(test)]
 mod tests {
+    use fraction::Decimal;
+
     use crate::{
         parser::{
             basic_info::make_ratio,
@@ -312,5 +314,37 @@ mod tests {
         assert_eq!(make_ratio(16_u8), Some((29, 25)));
         assert_eq!(make_ratio(45_u8), Some((29, 20)));
         assert_eq!(make_ratio(255_u8), Some((71, 20))); // i would so buy this
+    }
+
+    #[test]
+    fn dell_s2417dg_gamma() {
+        logger();
+        let input = crate::prelude::internal::raw_edid_by_filename("dell_s2417dg.raw.input");
+        let got = super::gamma(&input).unwrap();
+        let expected = Decimal::from(2.20);
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn that_guys_laptop_gamma() {
+        logger();
+        let input = crate::prelude::internal::edid_by_filename("1.input");
+        let got = super::gamma(&input).unwrap();
+        let expected = Decimal::from(2.20);
+
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn _93d328459ff6_gamma() {
+        logger();
+        let input = crate::prelude::internal::edid_by_filename(
+            "linuxhw_edid_EDID_Digital_Sony_SNY05FA_93D328459FF6.input",
+        );
+        let got = super::gamma(&input).unwrap();
+        let expected = Decimal::from(1.0);
+
+        assert_eq!(got, expected);
     }
 }
