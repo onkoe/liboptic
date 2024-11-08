@@ -6,7 +6,15 @@ use crate::prelude::internal::*;
 /// denominator for hardware support.
 #[tracing::instrument]
 pub(crate) fn parse(input: &[u8]) -> EstablishedTimings {
-    todo!()
+    let i = est_i(input[0x23]);
+    let ii = est_ii(input[0x24]);
+    let m = manufacturer(input[0x25]);
+
+    EstablishedTimings {
+        i,
+        ii,
+        manufacturer_timings: m,
+    }
 }
 
 /// Grabs established timings. Call with byte `0x23`.
