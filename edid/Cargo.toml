@@ -17,6 +17,7 @@ bytemuck = { version = "1.19.0", default-features = false, features = [
 fraction = { version = "0.15.3", default-features = false, features = [
     "with-decimal",
 ] }
+pisserror = { version = "0.3.0-rc.1", default-features = false }
 
 [dev-dependencies]
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
