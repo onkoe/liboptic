@@ -277,6 +277,8 @@ mod tests {
         },
     };
 
+    use super::BasicDisplayInfo;
+
     #[test]
     fn dell_s2417dg_vsi() {
         logger();
@@ -458,6 +460,42 @@ mod tests {
             srgb_std: false,
             says_pixel_format_and_refresh: true,
             is_continuous_freq: false,
+        };
+
+        assert_eq!(got, expected);
+    }
+
+    /// if this passes, we're chillin
+    #[test]
+    fn _2c47316eff13_all_basic_info() {
+        logger();
+        let input = crate::prelude::internal::edid_by_filename(
+            "linuxhw_edid_EDID_Digital_Samsung_SAM02E3_2C47316EFF13.input",
+        );
+
+        let got = super::parse(&input);
+        let expected = BasicDisplayInfo {
+            // this is gonna be a long one lol
+            input_definition: VideoSignalInterface::Digital {
+                color_bit_depth: ColorBitDepth::D8Bits,
+                supported_interface: Some(SupportedVideoInterface::DisplayPort),
+            },
+            screen_size_or_aspect_ratio: Some(SizeOrRatio::ScreenSize {
+                horizontal_cm: 37,
+                vertical_cm: 23,
+            }),
+            reported_gamma: Some(Decimal::from(2.35)),
+            feature_support: FeatureSupport {
+                power_management: PowerManagement {
+                    standby: false,
+                    suspend: false,
+                    active_off: true,
+                },
+                srgb_std: false,
+                color_support: ColorSupport::EncodingFormats(ColorEncodingFormats::Rgb444),
+                says_pixel_format_and_refresh: true,
+                is_continuous_freq: false,
+            },
         };
 
         assert_eq!(got, expected);
