@@ -1,7 +1,7 @@
 use arrayvec::ArrayString;
 use cvt_3_byte_timing::TimingCodeDesc;
 
-use self::display_range_limits::DisplayRangeLimits;
+use crate::prelude::internal::*;
 
 use super::{color::ColorCoordinate, std_timings::STiming};
 
@@ -27,7 +27,7 @@ pub enum DisplayDescriptor {
     /// Info about the display's range limits.
     ///
     /// TAG: 0xFD
-    DisplayRangeLimits(DisplayRangeLimits),
+    DisplayRangeLimits(RangeLimitsDesc),
 
     /// The model name of the display product.
     ///
