@@ -94,6 +94,7 @@ fn make_u10(bit0: bool, bit1: bool, etc: u8) -> u16 {
     tracing::trace!("bits now: {:?}", bits);
 
     // now we'll make it into a `u16`
+    tracing::debug!("u10 created! it's: {}", bits.load_be::<u16>());
     bits.load_be::<u16>()
 }
 
@@ -110,11 +111,11 @@ fn into_decimal(raw_value: u16) -> Decimal {
 
 #[cfg(test)]
 mod tests {
+    use core::str::FromStr;
     use fraction::Decimal;
 
-    use crate::{logger, parser::color::into_decimal};
-
     use super::make_u10;
+    use crate::{color::ColorCoordinate, logger, parser::color::into_decimal};
 
     /// it should be comprised only of my ones
     #[test]
@@ -131,6 +132,7 @@ mod tests {
     /// make sure the function is behaving according to spec
     #[test]
     fn into_decimal_endpts() {
+        logger();
         let start = 0b00_0000_0000;
         let midpoint = 0b00_0001_1111;
         let end = 0b11_1111_1111;
@@ -141,5 +143,54 @@ mod tests {
             Decimal::from(31) / Decimal::from(1024)
         );
         assert_eq!(into_decimal(end), Decimal::from(1023) / Decimal::from(1024));
+    }
+
+    /// samples from the standard
+    #[test]
+    fn into_decimal_samples() {
+        let a = 0b10_0111_0001;
+        let b = 0b01_0011_1010;
+        let c = 0b00_1001_1010;
+
+        assert_eq!(into_decimal(a), Decimal::from_str("0.6103516").unwrap());
+        assert_eq!(into_decimal(b), Decimal::from_str("0.3066406").unwrap());
+        assert_eq!(into_decimal(c), Decimal::from_str("0.1503906").unwrap());
+    }
+
+    /// test against the (unfortunately rounded) edid-decode values
+    #[test]
+    fn dell_s2417dg_color() {
+        logger();
+        let input = crate::prelude::internal::raw_edid_by_filename("dell_s2417dg.raw.input");
+        let colors = super::parse(&input);
+        tracing::info!("colors: {:#?}", colors);
+
+        assert!(eq(
+            colors.red,
+            ColorCoordinate::new(Decimal::from(0.6396), Decimal::from(0.3300))
+        ));
+        assert!(eq(
+            colors.green,
+            ColorCoordinate::new(Decimal::from(0.2998), Decimal::from(0.5996))
+        ));
+        assert!(eq(
+            colors.blue,
+            ColorCoordinate::new(Decimal::from(0.1503), Decimal::from(0.0595))
+        ));
+        assert!(eq(
+            colors.white_point,
+            ColorCoordinate::new(Decimal::from(0.3125), Decimal::from(0.3291))
+        ));
+    }
+
+    /// helper func to compare the coords :)
+    #[tracing::instrument]
+    fn eq(c1: ColorCoordinate, c2: ColorCoordinate) -> bool {
+        let f = |d1, d2| -> bool {
+            let m = if d1 < d2 { d2 - d1 } else { d1 - d2 };
+            m <= Decimal::from(0.0002)
+        };
+
+        f(c1.x, c2.x) && f(c1.y, c2.y)
     }
 }
