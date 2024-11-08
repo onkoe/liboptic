@@ -1,3 +1,4 @@
+use arrayvec::ArrayString;
 use cvt_3_byte_timing::TimingCodeDesc;
 
 use self::display_range_limits::DisplayRangeLimits;
@@ -8,7 +9,7 @@ pub mod cvt_3_byte_timing;
 pub mod display_range_limits;
 
 /// A byte "string" comprised of alphanumerics.
-pub type ByteStr13 = [u8; 13];
+pub type ByteStr13 = ArrayString<13>;
 
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
