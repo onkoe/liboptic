@@ -21,6 +21,9 @@ pub(crate) mod internal {
         },
         BasicDisplayInfo, SizeOrRatio,
     };
+    pub use crate::structures::est_timings::{
+        EstablishedTimings, EstablishedTimingsI, EstablishedTimingsII, ManufacturerTimings,
+    };
 
     // errors
     pub(crate) use crate::error::EdidError;
