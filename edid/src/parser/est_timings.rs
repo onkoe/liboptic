@@ -4,16 +4,19 @@ use crate::prelude::internal::*;
 ///
 /// Note that the timings are hardcoded, mostly to have a lowest common
 /// denominator for hardware support.
+#[tracing::instrument]
 pub(crate) fn parse(input: &[u8]) -> EstablishedTimings {
     todo!()
 }
 
 /// Grabs established timings. Call with byte `0x23`.
+#[tracing::instrument]
 fn est_i(byte: u8) -> EstablishedTimingsI {
     todo!()
 }
 
 /// Grabs established timings. Call with byte `0x24`.
+#[tracing::instrument]
 fn est_ii(byte: u8) -> EstablishedTimingsII {
     todo!()
 }
@@ -22,6 +25,7 @@ fn est_ii(byte: u8) -> EstablishedTimingsII {
 /// timings themselves.
 ///
 /// Call with byte `0x25`.
+#[tracing::instrument]
 fn manufacturer(byte: u8) -> ManufacturerTimings {
     todo!()
 }
