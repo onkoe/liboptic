@@ -8,10 +8,10 @@ use fraction::Decimal;
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct ColorCharacteristics {
-    red: ColorCoordinate,
-    green: ColorCoordinate,
-    blue: ColorCoordinate,
-    white_point: ColorCoordinate,
+    pub red: ColorCoordinate,
+    pub green: ColorCoordinate,
+    pub blue: ColorCoordinate,
+    pub white_point: ColorCoordinate,
 }
 
 /// A coordinate on the CIE 1931 color space graph, used to represent
@@ -21,4 +21,11 @@ pub struct ColorCharacteristics {
 pub struct ColorCoordinate {
     pub x: Decimal,
     pub y: Decimal,
+}
+
+impl ColorCoordinate {
+    /// Creates a new color coordinate on the chart.
+    pub fn new(x: Decimal, y: Decimal) -> Self {
+        Self { x, y }
+    }
 }
