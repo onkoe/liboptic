@@ -1,11 +1,22 @@
 use bitvec::{order::Lsb0, slice::BitSlice};
 use fraction::{Decimal, GenericFraction};
+
 use crate::prelude::internal::*;
 
+/// Parses out some basic info about the display.
 #[tracing::instrument]
 pub(super) fn parse(input: &[u8]) -> BasicDisplayInfo {
-    let _input_def = video_input_definition(input[0x14]);
-    todo!()
+    let input_definition = video_input_definition(input[0x14]);
+    let screen_size_or_aspect_ratio = size_or_ratio(input);
+    let reported_gamma = gamma(input);
+    let feature_support = feature_support(input);
+
+    BasicDisplayInfo {
+        input_definition,
+        screen_size_or_aspect_ratio,
+        reported_gamma,
+        feature_support,
+    }
 }
 
 #[tracing::instrument]
