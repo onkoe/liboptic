@@ -9,7 +9,9 @@ use crate::prelude::internal::*;
 
 /// Parses out a Detailed Timing Definition from the given 18 bytes.
 ///
-/// This must only ever be called when the first two bytes are [0x00, 0x01].
+/// This must only ever be called when at least one of the first two bytes are
+/// non-zero.
+#[tracing::instrument(skip_all)]
 pub(super) fn parse(bytes: &[u8; 18]) -> DetailedTimingDefinition {
     // ensure the first two bytes are >= [0x00, 0x01]
     if [bytes[0], bytes[1]] == [0x00, 0x00] {
@@ -143,6 +145,7 @@ fn lower_nibble(shared_byte: u8, byte: u8) -> u16 {
 }
 
 /// Finds the "part 2" section of the detailed timing definition.
+#[tracing::instrument]
 fn part_2(byte: u8) -> (SignalInterfaceType, StereoViewingSupport, SyncSignal) {
     // grab it as bits
     let bits = byte.view_bits::<Lsb0>(); // lsb0 to make bits[0x07] = bit 7
