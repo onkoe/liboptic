@@ -8,10 +8,10 @@ use crate::structures::desc::DisplayDescriptor;
 pub struct EighteenByteDescriptors {
     /// The video timing mode that produces the "best quality image"
     /// according to the display's manufacturer.
-    preferred_timing_mode: timing::DetailedTimingDefinition,
+    pub preferred_timing_mode: timing::DetailedTimingDefinition,
 
     /// Three additional blocks with information about the display.
-    blocks: [EighteenByteBlock; 3],
+    pub blocks: [EighteenByteBlock; 3],
 }
 
 /// An eighteen-byte block containing either a detailed timing or display
