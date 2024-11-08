@@ -7,6 +7,7 @@
 
 #![no_std]
 
+pub mod error;
 mod parser;
 mod prelude;
 pub mod structures; // TODO: re-export with prelude instead
@@ -55,7 +56,7 @@ pub struct Edid {
 }
 
 impl Edid {
-    pub fn new(edid_data: &mut &[u8]) -> PResult<Self> {
+    pub fn new(edid_data: &mut &[u8]) -> Result<Self, EdidError> {
         parser::parse(edid_data)
     }
 }

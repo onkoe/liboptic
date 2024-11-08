@@ -22,4 +22,6 @@ pub(crate) mod internal {
         BasicDisplayInfo, SizeOrRatio,
     };
 
+    // errors
+    pub(crate) use crate::error::EdidError;
 }

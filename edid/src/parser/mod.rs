@@ -1,15 +1,12 @@
-use winnow::{
-    error::{ErrMode, ParserError as _},
-    PResult,
-};
-
 mod basic_info;
 mod header;
 mod id;
 pub(super) mod util;
 mod version;
 
-pub fn parse(input: &mut &[u8]) -> PResult<super::Edid> {
+use crate::prelude::internal::*;
+
+pub fn parse(input: &mut &[u8]) -> Result<Edid, EdidError> {
     // check the length
     check_length(input)?;
 
@@ -25,16 +22,17 @@ pub fn parse(input: &mut &[u8]) -> PResult<super::Edid> {
     todo!()
 }
 
-fn check_length(input: &&[u8]) -> PResult<()> {
+fn check_length(input: &&[u8]) -> Result<(), EdidError> {
     let expected_len = 0x7F;
     let real_len = input.len();
 
     if real_len < expected_len {
         tracing::error!("The length is too short: (got: `{real_len}`, expected: `{expected_len}`)");
-        return Err(ErrMode::from_error_kind(
-            input,
-            winnow::error::ErrorKind::Verify,
-        ));
+
+        return Err(EdidError::TooShort {
+            got: real_len as u8,
+            expected: expected_len as u8,
+        });
     }
 
     Ok(())

@@ -8,7 +8,6 @@ bitvec = { version = "1.0.1", default-features = false }
 tracing = { version = "0.1.40", default-features = false, features = [
     "attributes",
 ] }
-winnow = { version = "0.6.20", default-features = false }
 pnpid = "=1.0.2"
 arrayvec = { version = "0.7.6", default-features = false }
 bytemuck = { version = "1.19.0", default-features = false, features = [
