@@ -69,3 +69,94 @@ fn manufacturer(byte: u8) -> ManufacturerTimings {
         _0: bits[0],
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn dell_s2417dg_est_timings() {
+        logger();
+        let input = crate::prelude::internal::raw_edid_by_filename("dell_s2417dg.raw.input");
+        let got = super::parse(&input);
+
+        let expected = EstablishedTimings {
+            i: EstablishedTimingsI {
+                _720x400_70hz: false,
+                _720x400_88hz: false,
+                _640x480_60hz: true,
+                _640x480_67hz: false,
+                _640x480_72hz: false,
+                _640x480_75hz: false,
+                _800x600_56hz: false,
+                _800x600_60hz: true,
+            },
+            ii: EstablishedTimingsII {
+                _800x600_72hz: false,
+                _800x600_75hz: false,
+                _832x624_75hz: false,
+                _1024x768_87hz_interlaced: false,
+                _1024x768_60hz: true,
+                _1024x768_70hz: false,
+                _1024x768_75hz: false,
+                _1280x1024_75hz: false,
+            },
+            manufacturer_timings: ManufacturerTimings {
+                _1152x870_75hz: false,
+                _6: false,
+                _5: false,
+                _4: false,
+                _3: false,
+                _2: false,
+                _1: false,
+                _0: false,
+            },
+        };
+
+        assert_eq!(expected, got);
+    }
+
+    #[test]
+    fn _2c47316eff13_timings() {
+        logger();
+        let input = crate::prelude::internal::edid_by_filename(
+            "linuxhw_edid_EDID_Digital_Samsung_SAM02E3_2C47316EFF13.input",
+        );
+        let got = super::parse(&input);
+
+        let expected = EstablishedTimings {
+            i: EstablishedTimingsI {
+                _720x400_70hz: true,
+                _720x400_88hz: false,
+                _640x480_60hz: true,
+                _640x480_67hz: true,
+                _640x480_72hz: true,
+                _640x480_75hz: true,
+                _800x600_56hz: true,
+                _800x600_60hz: true,
+            },
+            ii: EstablishedTimingsII {
+                _800x600_72hz: true,
+                _800x600_75hz: true,
+                _832x624_75hz: true,
+                _1024x768_87hz_interlaced: false,
+                _1024x768_60hz: true,
+                _1024x768_70hz: true,
+                _1024x768_75hz: true,
+                _1280x1024_75hz: true,
+            },
+            manufacturer_timings: ManufacturerTimings {
+                _1152x870_75hz: true,
+                _6: false,
+                _5: false,
+                _4: false,
+                _3: false,
+                _2: false,
+                _1: false,
+                _0: false,
+            },
+        };
+
+        assert_eq!(expected, got);
+    }
+}
