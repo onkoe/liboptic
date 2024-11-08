@@ -19,7 +19,7 @@ pub struct STiming {
     /// The horizontal active pixels.
     //
     // IMPLEMENTATION NOTE: (raw + 31) * 8
-    pub horizontal_active_pixel_ct: u16,
+    pub horizontal_addr_pixel_ct: u16,
     pub aspect_ratio: StandardAspectRatio,
     /// The refresh rate in Hz.
     ///
