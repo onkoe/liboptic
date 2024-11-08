@@ -1,5 +1,7 @@
 //! Color characteristics.
 
+use fraction::Decimal;
+
 /// A representation of the CIE 1931 color space.
 ///
 /// Indicates the colors a device can display.
@@ -17,6 +19,6 @@ pub struct ColorCharacteristics {
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct ColorCoordinate {
-    pub x: f32,
-    pub y: f32,
+    pub x: Decimal,
+    pub y: Decimal,
 }
