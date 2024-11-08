@@ -4,8 +4,8 @@ use colored::Colorize;
 
 fn main() {
     // open up the file
-    const PATH: &str = "dell_s2417dg.raw.input";
-    let info = raw_edid_by_filename(PATH);
+    const PATH: &str = "linuxhw_edid_EDID_Digital_Samsung_SAM02E3_2C47316EFF13.input";
+    let info = edid_by_filename(PATH);
 
     use std::format as f;
 
@@ -58,9 +58,21 @@ fn main() {
 }
 
 /// Grabs a raw (not encoded) EDID from disk at `tests/assets/`
+#[tracing::instrument]
 pub(crate) fn raw_edid_by_filename(name: &str) -> Vec<u8> {
     let path =
         std::path::PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/assets")).join(name);
 
     std::fs::read(path).unwrap()
+}
+
+/// Grabs an EDID from disk at `tests/assets/`
+#[tracing::instrument]
+pub(crate) fn edid_by_filename(name: &str) -> Vec<u8> {
+    let path =
+        std::path::PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/assets")).join(name);
+    let s = std::fs::read_to_string(path)
+        .unwrap()
+        .replace([' ', '\n'], "");
+    hex::decode(s.trim()).unwrap()
 }

@@ -64,3 +64,52 @@ fn hoz_addr_pixels(ct: u8) -> u16 {
 
     (ct as u16 + 31) * 8
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn _2c47316eff13_std_timings() {
+        logger();
+        let path = "linuxhw_edid_EDID_Digital_Samsung_SAM02E3_2C47316EFF13.input";
+        let input = crate::prelude::internal::edid_by_filename(path);
+
+        let got = super::parse(&input);
+        tracing::info!("got: {got:#?}");
+
+        let expected = StandardTimings {
+            st1: Some(STiming {
+                horizontal_addr_pixel_ct: 1440,
+                aspect_ratio: StandardAspectRatio::_16_10,
+                field_refresh_rate: 60,
+            }),
+            st2: Some(STiming {
+                horizontal_addr_pixel_ct: 1440,
+                aspect_ratio: StandardAspectRatio::_16_10,
+                field_refresh_rate: 75,
+            }),
+            st3: Some(STiming {
+                horizontal_addr_pixel_ct: 1280,
+                aspect_ratio: StandardAspectRatio::_5_4,
+                field_refresh_rate: 60,
+            }),
+            st4: Some(STiming {
+                horizontal_addr_pixel_ct: 1280,
+                aspect_ratio: StandardAspectRatio::_4_3,
+                field_refresh_rate: 60,
+            }),
+            st5: Some(STiming {
+                horizontal_addr_pixel_ct: 1152,
+                aspect_ratio: StandardAspectRatio::_4_3,
+                field_refresh_rate: 75,
+            }),
+            st6: None,
+            st7: None,
+            st8: None,
+        };
+        tracing::warn!("expected: {expected:#?}");
+
+        assert_eq!(got, expected);
+    }
+}
