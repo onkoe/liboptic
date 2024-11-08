@@ -10,6 +10,7 @@ pub(crate) mod internal {
         _18bytes, basic_info, color, est_timings, extension, id, std_timings, version,
     };
 
+    pub use crate::std_timings::{STiming, StandardAspectRatio, StandardTimings};
     pub(crate) use crate::structures::basic_info::{
         feature_support::{
             ColorEncodingFormats, ColorSupport, ColorType, FeatureSupport, PowerManagement,

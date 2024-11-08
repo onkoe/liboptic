@@ -3,6 +3,7 @@ mod color;
 mod est_timings;
 mod header;
 mod id;
+mod std_timings;
 pub(super) mod util;
 mod version;
 
