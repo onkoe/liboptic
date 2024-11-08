@@ -23,6 +23,7 @@ pub(crate) mod internal {
         },
         BasicDisplayInfo, SizeOrRatio,
     };
+    pub(crate) use crate::structures::desc::display_range_limits::*;
     pub use crate::structures::est_timings::{
         EstablishedTimings, EstablishedTimingsI, EstablishedTimingsII, ManufacturerTimings,
     };
