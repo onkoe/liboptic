@@ -5,20 +5,20 @@ use fraction::Decimal;
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct BasicDisplayInfo {
-    input_definition: vsi::VideoSignalInterface,
+    pub input_definition: vsi::VideoSignalInterface,
 
     /// The screen size or aspect ratio.
     ///
     /// May not report any values if its a projector.
-    screen_size_or_aspect_ratio: Option<SizeOrRatio>,
+    pub screen_size_or_aspect_ratio: Option<SizeOrRatio>,
 
     /// The device's gamma value.
     ///
     /// If `None`, it should be in an extension block.
-    reported_gamma: Option<Decimal>,
+    pub reported_gamma: Option<Decimal>,
 
     /// Info about the display's support for various misc. features.
-    feature_support: feature_support::FeatureSupport,
+    pub feature_support: feature_support::FeatureSupport,
 }
 
 pub mod vsi {
@@ -119,7 +119,7 @@ pub mod vsi {
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub enum SizeOrRatio {
     /// The screen size in centimeters (cm).
-    ScreenSize { vertical_cm: u8, horizontal_cm: u8 },
+    ScreenSize { horizontal_cm: u8, vertical_cm: u8 },
 
     /// Just an aspect ratio.
     AspectRatio { horizontal: u16, vertical: u16 },
