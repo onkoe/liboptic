@@ -1,4 +1,5 @@
 mod basic_info;
+mod color;
 mod header;
 mod id;
 pub(super) mod util;
