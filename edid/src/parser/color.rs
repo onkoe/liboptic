@@ -1,11 +1,80 @@
 use bitvec::prelude::*;
 use fraction::Decimal;
 
-use crate::color::ColorCharacteristics;
+use crate::color::{ColorCharacteristics, ColorCoordinate};
 
+/// Finds the approximate color characteristics (coordinates) for this display.
 #[tracing::instrument(skip_all)]
 pub(super) fn parse(input: &[u8]) -> ColorCharacteristics {
-    todo!()
+    // yo head to page 28 (as of nov. 2024) to know what's going on
+    let _0x19 = input[0x19].view_bits::<Lsb0>();
+    let _0x1a = input[0x1A].view_bits::<Lsb0>();
+
+    // 🔴️ red
+    let rx = {
+        let (rx1, rx0) = (_0x19[7], _0x19[6]);
+        let rx_etc = input[0x1b];
+        into_decimal(make_u10(rx0, rx1, rx_etc))
+    };
+
+    let ry = {
+        let (ry1, ry0) = (_0x19[5], _0x19[4]);
+        let ry_etc = input[0x1c];
+        into_decimal(make_u10(ry0, ry1, ry_etc))
+    };
+
+    // 🟢️ green!
+    let gx = {
+        let (gx1, gx0) = (_0x19[3], _0x19[2]);
+        let gx_etc = input[0x1D];
+        into_decimal(make_u10(gx0, gx1, gx_etc))
+    };
+
+    let gy = {
+        let (gy1, gy0) = (_0x19[1], _0x19[0]);
+        let gy_etc = input[0x1E];
+        into_decimal(make_u10(gy0, gy1, gy_etc))
+    };
+
+    // 🔵️ blue
+    let bx = {
+        let (bx1, bx0) = (_0x1a[7], _0x1a[6]);
+        let bx_etc = input[0x1F];
+        into_decimal(make_u10(bx0, bx1, bx_etc))
+    };
+
+    // blue y.
+    let by = {
+        let (by1, by0) = (_0x1a[5], _0x1a[4]);
+        let by_etc = input[0x20];
+        into_decimal(make_u10(by0, by1, by_etc))
+    };
+
+    // 🤍️ finally, we can do the white coords. <3 b/c the circle rendered weird
+    let wx = {
+        let (wx1, wx0) = (_0x1a[3], _0x1a[2]);
+        let wx_etc = input[0x21];
+        into_decimal(make_u10(wx0, wx1, wx_etc))
+    };
+
+    let wy = {
+        let (wy1, wy0) = (_0x1a[1], _0x1a[0]);
+        let wy_etc = input[0x22];
+        into_decimal(make_u10(wy0, wy1, wy_etc))
+    };
+
+    // make the actual coords
+    let red = ColorCoordinate::new(rx, ry);
+    let green = ColorCoordinate::new(gx, gy);
+    let blue = ColorCoordinate::new(bx, by);
+    let white = ColorCoordinate::new(wx, wy);
+
+    ColorCharacteristics {
+        red,
+        green,
+        blue,
+        white_point: white,
+    }
 }
 
 /// Creates a "u10" (10 bit unsigned integer) in a `u16`.
