@@ -1,5 +1,5 @@
 use crate::{prelude::internal::*, structures::desc::DisplayDescriptor};
-use descriptors::*;
+use descriptors::{range_limits, *};
 
 mod descriptors;
 mod preferred_tm;
@@ -15,9 +15,9 @@ pub(crate) fn parse(input: &[u8]) -> Result<EighteenByteDescriptors, EdidError> 
     let preferred_timing_mode = preferred_tm::parse(first.try_into()?);
 
     let blocks = [
-        one(second.try_into()?)?,
-        one(third.try_into()?)?,
-        one(fourth.try_into()?)?,
+        one(second.try_into()?, input)?,
+        one(third.try_into()?, input)?,
+        one(fourth.try_into()?, input)?,
     ];
 
     Ok(EighteenByteDescriptors {
@@ -28,7 +28,7 @@ pub(crate) fn parse(input: &[u8]) -> Result<EighteenByteDescriptors, EdidError> 
 
 /// Parses the given eighteen-byte block.
 #[tracing::instrument(skip_all)]
-fn one(input: &[u8; 18]) -> Result<EighteenByteBlock, EdidError> {
+fn one(input: &[u8; 18], edid: &[u8]) -> Result<EighteenByteBlock, EdidError> {
     // if the first two bytes aren't both zero, it's a timing definition
     if input[0] != 0x00 && input[1] != 0x00 {
         return Ok(EighteenByteBlock::Timing(preferred_tm::parse(input)));
@@ -53,8 +53,15 @@ fn one(input: &[u8; 18]) -> Result<EighteenByteBlock, EdidError> {
     // that is and call the appropriate parser
     let kind_byte = input[3];
     let desc = match kind_byte {
+        // string friends
         0xFF => DisplayDescriptor::ProductSerial(_13_byte_string::parse(input)),
         0xFE => DisplayDescriptor::DataString(_13_byte_string::parse(input)),
+        0xFC => DisplayDescriptor::ProductName(_13_byte_string::parse(input)),
+
+        // others
+        0xFD => DisplayDescriptor::DisplayRangeLimits(range_limits::parse(input, edid)?),
+
+        // errors
         0x11..=0xF6 => return Err(EdidError::DescriptorUsedReservedKind { kind_byte }),
         ty => todo!("this descriptor type (`{ty:x}`) is unimplemented!"),
     };
