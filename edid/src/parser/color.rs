@@ -14,53 +14,53 @@ pub(super) fn parse(input: &[u8]) -> ColorCharacteristics {
     let rx = {
         let (rx1, rx0) = (_0x19[7], _0x19[6]);
         let rx_etc = input[0x1b];
-        into_decimal(make_u10(rx0, rx1, rx_etc))
+        into_decimal(make_u10(rx1, rx0, rx_etc))
     };
 
     let ry = {
         let (ry1, ry0) = (_0x19[5], _0x19[4]);
         let ry_etc = input[0x1c];
-        into_decimal(make_u10(ry0, ry1, ry_etc))
+        into_decimal(make_u10(ry1, ry0, ry_etc))
     };
 
     // 🟢️ green!
     let gx = {
         let (gx1, gx0) = (_0x19[3], _0x19[2]);
         let gx_etc = input[0x1D];
-        into_decimal(make_u10(gx0, gx1, gx_etc))
+        into_decimal(make_u10(gx1, gx0, gx_etc))
     };
 
     let gy = {
         let (gy1, gy0) = (_0x19[1], _0x19[0]);
         let gy_etc = input[0x1E];
-        into_decimal(make_u10(gy0, gy1, gy_etc))
+        into_decimal(make_u10(gy1, gy0, gy_etc))
     };
 
     // 🔵️ blue
     let bx = {
         let (bx1, bx0) = (_0x1a[7], _0x1a[6]);
         let bx_etc = input[0x1F];
-        into_decimal(make_u10(bx0, bx1, bx_etc))
+        into_decimal(make_u10(bx1, bx0, bx_etc))
     };
 
     // blue y.
     let by = {
         let (by1, by0) = (_0x1a[5], _0x1a[4]);
         let by_etc = input[0x20];
-        into_decimal(make_u10(by0, by1, by_etc))
+        into_decimal(make_u10(by1, by0, by_etc))
     };
 
     // 🤍️ finally, we can do the white coords. <3 b/c the circle rendered weird
     let wx = {
         let (wx1, wx0) = (_0x1a[3], _0x1a[2]);
         let wx_etc = input[0x21];
-        into_decimal(make_u10(wx0, wx1, wx_etc))
+        into_decimal(make_u10(wx1, wx0, wx_etc))
     };
 
     let wy = {
         let (wy1, wy0) = (_0x1a[1], _0x1a[0]);
         let wy_etc = input[0x22];
-        into_decimal(make_u10(wy0, wy1, wy_etc))
+        into_decimal(make_u10(wy1, wy0, wy_etc))
     };
 
     // make the actual coords
@@ -78,14 +78,16 @@ pub(super) fn parse(input: &[u8]) -> ColorCharacteristics {
 }
 
 /// Creates a "u10" (10 bit unsigned integer) in a `u16`.
+///
+/// Used to combine the bits that make up coordinates.
 #[tracing::instrument]
-fn make_u10(bit0: bool, bit1: bool, etc: u8) -> u16 {
+pub(crate) fn make_u10(_2nd_smallest: bool, smallest: bool, etc: u8) -> u16 {
     // make a place to store them all
     let mut bits: BitArray<u16, Lsb0> = BitArray::ZERO;
 
     // ...store them all :)
-    bits.set(0, bit0);
-    bits.set(1, bit1);
+    bits.set(0, smallest);
+    bits.set(1, _2nd_smallest);
 
     // we'll iterate over all the `etc` bits and store them in the other list.
     for (index, bit) in etc.view_bits::<Lsb0>().into_iter().enumerate() {
@@ -103,7 +105,7 @@ fn make_u10(bit0: bool, bit1: bool, etc: u8) -> u16 {
 ///
 /// This makes a typical decimal. Do not call with greater than 1023 (u10's max).
 #[tracing::instrument]
-fn into_decimal(raw_value: u16) -> Decimal {
+pub(crate) fn into_decimal(raw_value: u16) -> Decimal {
     debug_assert!(raw_value <= 0b11_1111_1111, "otherwise ur calling it wrong");
     let len = 2_u16.pow(10); // 10 binary digits
     Decimal::from(raw_value) / len
@@ -198,7 +200,8 @@ mod tests {
     #[tracing::instrument]
     fn deq(d1: Decimal, d2: Decimal) -> bool {
         let m = if d1 < d2 { d2 - d1 } else { d1 - d2 };
-        m <= Decimal::from(0.01) || m >= Decimal::from(0.01)
+        let s = Decimal::from_str("0.0005").unwrap();
+        m <= s || m >= s
     }
 
     /// helper func to compare the coords :)

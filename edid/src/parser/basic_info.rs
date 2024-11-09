@@ -201,7 +201,7 @@ fn gamma(input: &[u8]) -> Option<Decimal> {
         }
 
         // reverse from the standard: byte = (GAMMA x 100) – 100
-        Some((Decimal::from(byte) + 100) / 100)
+        Some((Decimal::from(byte) + 100) / Decimal::from(100))
     }
 }
 
