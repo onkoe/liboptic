@@ -34,11 +34,15 @@ fn main() {
     );
     println!(
         "{}",
-        f!("Color Characteristics: {:x?}", &info[0x19..0x23]).bright_cyan()
+        f!("Color Characteristics: {:x?}", &info[0x19..0x23])
+            .bright_cyan()
+            .on_black()
     );
     println!(
         "{}",
-        f!("Established Timings: {:x?}", &info[0x23..0x26]).white()
+        f!("Established Timings: {:x?}", &info[0x23..0x26])
+            .white()
+            .on_black()
     );
     println!(
         "{}",
@@ -49,14 +53,44 @@ fn main() {
         .bright_red()
     );
     println!(
-        "{}",
-        f!("18 Byte Data Blocks: {:x?}", &info[0x36..0x7e]).bright_green()
+        "{}\n{}\n{}\n{}",
+        f!(
+            "18 Byte Data Block 1 ({:x}): {:x?}",
+            info[0x39],
+            &info[0x36..0x48]
+        )
+        .green()
+        .on_black(),
+        f!(
+            "18 Byte Data Block 2 ({:x}): {:x?}",
+            info[0x4b],
+            &info[0x48..0x5a]
+        )
+        .green()
+        .on_bright_black(),
+        f!(
+            "18 Byte Data Block 3 ({:x}): {:x?}",
+            info[0x5d],
+            &info[0x5a..0x6c]
+        )
+        .green()
+        .on_black(),
+        f!(
+            "18 Byte Data Block 4 ({:x}): {:x?}",
+            info[0x6f],
+            &info[0x6c..0x7e]
+        )
+        .green()
+        .on_bright_black()
     );
     println!(
         "{}",
         f!("Extension Block Count N: {:x?}", &info[0x7e]).bright_blue()
     );
-    println!("{}", f!("Checksum C: {:x?}", &info[0x7f]).yellow());
+    println!(
+        "{}",
+        f!("Checksum C: {:x?}", &info[0x7f]).yellow().on_black()
+    );
 }
 
 /// Grabs a raw (not encoded) EDID from disk at `tests/assets/`
@@ -65,7 +99,7 @@ pub(crate) fn raw_edid_by_filename(name: &str) -> Vec<u8> {
     let path =
         std::path::PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/assets")).join(name);
 
-    std::fs::read(path).unwrap()
+    std::fs::read("/sys/class/drm/card1-DP-3/edid").unwrap()
 }
 
 /// Grabs an EDID from disk at `tests/assets/`
