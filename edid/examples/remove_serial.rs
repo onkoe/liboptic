@@ -1,33 +1,91 @@
 //! reads a display's edid from disk and reads its serial code.
 //!
-//! if it's not zero, it replaces it with `0x0001` and saves the file.
+//! if it's not zero, it replaces it with `[0x00, 0x01]` and saves the file.
 
 use std::{fs::File, io::Write as _};
 
-// FIXME: currently doesn't account for checksum lol
 fn main() {
+    tracing_subscriber::fmt()
+        .pretty()
+        .with_max_level(tracing::Level::DEBUG)
+        .init();
+
     // open up the file
-    const PATH: &str = "dell_s2417dg.raw.input";
-    let mut info = raw_edid_by_filename(PATH);
+    const PATH: &str = "tv.edid.IDENTIFIYING_INFO.raw.input";
+    let mut bytes = raw_edid_by_filename(PATH);
+
+    // ensure checksum calculation is correct by calculating the one that's
+    // already there.
+    //
+    // if the old checksum isn't correct, we just warn the user and continue.
+    if check_checksum(&bytes) {
+        let old_checksum = make_checksum(&bytes[..0x7F]);
+        assert_eq!(old_checksum, bytes[0x7F], "checksum calc is wrong!");
+        tracing::debug!("Checksum calculation was correct. Continuing with changes...");
+    } else {
+        tracing::warn!(
+            "The original EDID failed its checksum. \
+        Continuing with changes anyways..."
+        );
+    }
 
     // mutate the bytes
-    info[0x0C] = 0b0001;
-    info[0x0D] = 0b0000;
-    info[0x0E] = 0b0000;
-    info[0x0F] = 0b0000;
+    bytes[0x0C] = 0b0001;
+    bytes[0x0D] = 0b0000;
+    bytes[0x0E] = 0b0000;
+    bytes[0x0F] = 0b0000;
+    tracing::info!("Overwrote serial number bytes successfully.");
+
+    // make a new checksum
+    let checksum = make_checksum(&bytes);
+    bytes[0x7F] = checksum;
+    assert_eq!(
+        add(&bytes[..=0x7F]) % 256,
+        0x00,
+        "adding all values should result in zero"
+    );
 
     // save the file to disk
     let mut f = File::create(
         std::path::PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/assets")).join(PATH),
     )
     .unwrap();
-    f.write_all(&info).unwrap();
+    f.write_all(&bytes).unwrap();
+    tracing::info!("All done!");
 }
 
 /// Grabs a raw (not encoded) EDID from disk at `tests/assets/`
+#[tracing::instrument]
 pub(crate) fn raw_edid_by_filename(name: &str) -> Vec<u8> {
     let path =
         std::path::PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/assets")).join(name);
 
     std::fs::read(path).unwrap()
+}
+
+#[tracing::instrument(skip_all)]
+fn make_checksum(input: &[u8]) -> u8 {
+    let non_checksum_bytes = &input[..0x7F]; // excludes the last byte, which has the old checksum
+    let total = add(non_checksum_bytes) % 256;
+    (256 - total) as u8 // this MUST be <= 255, so always fits.
+}
+
+/// Adds all bytes in a slice.
+fn add(bytes: &[u8]) -> u32 {
+    bytes.iter().map(|b| *b as u32).sum::<u32>()
+}
+
+/// Checks that the given slice's first 128 bytes sum (with overflow) to zero.
+#[tracing::instrument(skip_all)]
+fn check_checksum(bytes: &[u8]) -> bool {
+    let used = &bytes[..=0x7F];
+    let sum = add(used);
+
+    let res = sum % 256;
+    if res != 0x00 {
+        tracing::error!("The given byte slices failed its checksum.");
+        false
+    } else {
+        true
+    }
 }
