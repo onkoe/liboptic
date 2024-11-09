@@ -1,10 +1,12 @@
 use arrayvec::ArrayString;
+use color_point::WhitePoint;
 use cvt_3_byte_timing::TimingCodeDesc;
 
 use crate::prelude::internal::*;
 
 use super::{color::ColorCoordinate, std_timings::STiming};
 
+pub mod color_point;
 pub mod cvt_3_byte_timing;
 pub mod display_range_limits;
 
@@ -37,10 +39,7 @@ pub enum DisplayDescriptor {
     /// Two sets of additional white points in the color space.
     ///
     /// TAG: 0xFB
-    ColorPointData {
-        w1: ColorCoordinate,
-        w2: ColorCoordinate,
-    },
+    ColorPointData { w1: WhitePoint, w2: WhitePoint },
 
     /// Six additional Standard Timings. If the display supports more, they'll
     /// be found in an extension block.
