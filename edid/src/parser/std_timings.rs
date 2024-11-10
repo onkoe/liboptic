@@ -27,12 +27,12 @@ pub(crate) fn parse(input: &[u8]) -> StandardTimings {
 #[tracing::instrument]
 pub(crate) fn one(bytes: &[u8]) -> Option<STiming> {
     // if both bytes are 1, assume unused
-    if (bytes[0] == 0x01 && bytes[1] == 0x01) {
+    if bytes[0] == 0x01 && bytes[1] == 0x01 {
         return None;
     }
 
     // if the first byte is 1, also assume unused. warn about its usage.
-    if (bytes[0] == 0x01 && bytes[1] == 0x00) {
+    if bytes[0] == 0x01 && bytes[1] == 0x00 {
         tracing::warn!(
             "Standard timing used an [0x01, 0x00] to show that the timing \
         was unused. This is against the standard. \
