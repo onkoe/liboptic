@@ -13,11 +13,15 @@ arrayvec = { version = "0.7.6", default-features = false }
 bytemuck = { version = "1.19.0", default-features = false, features = [
     "must_cast",
 ] }
-fraction = { version = "0.15.3", default-features = false, features = [
-    "with-decimal",
-] }
-pisserror = { version = "0.3.0-rc.1", default-features = false }
+pisserror = { version = "0.3.0-rc.2", default-features = false }
 nobcd = { version = "0.2.0" }
+rust_decimal = { version = "1.36.0", default-features = false, features = [
+    "c-repr",
+] }
+rust_decimal_macros = "1.36"
+num-rational = { version = "0.4.2", default-features = false }
+num-traits = { version = "0.2.19", default-features = false }
+
 
 [dev-dependencies]
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }

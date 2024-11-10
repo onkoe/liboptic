@@ -1,5 +1,6 @@
 use bitvec::prelude::*;
-use fraction::Decimal;
+
+use crate::prelude::internal::*;
 
 use crate::color::{ColorCharacteristics, ColorCoordinate};
 
@@ -108,15 +109,13 @@ pub(crate) fn make_u10(_2nd_smallest: bool, smallest: bool, etc: u8) -> u16 {
 pub(crate) fn into_decimal(raw_value: u16) -> Decimal {
     debug_assert!(raw_value <= 0b11_1111_1111, "otherwise ur calling it wrong");
     let len = 2_u16.pow(10); // 10 binary digits
-    Decimal::from(raw_value) / len
+    Decimal::from(raw_value) / Decimal::from(len)
 }
 
 #[cfg(test)]
 mod tests {
-    use core::str::FromStr;
-    use fraction::Decimal;
 
-    use super::make_u10;
+    use super::*;
     use crate::{color::ColorCoordinate, logger, parser::color::into_decimal};
 
     /// it should be comprised only of my ones
@@ -139,7 +138,7 @@ mod tests {
         let midpoint = 0b00_0001_1111;
         let end = 0b11_1111_1111;
 
-        assert_eq!(into_decimal(start), Decimal::from(0));
+        assert_eq!(into_decimal(start), dec!(0));
         assert_eq!(
             into_decimal(midpoint),
             Decimal::from(31) / Decimal::from(1024)
@@ -156,18 +155,9 @@ mod tests {
 
         // note: i guess this isn't deterministic. these are FLAKEY unless you
         // use the `deq` fn below
-        assert!(deq(
-            into_decimal(a),
-            Decimal::from_str("0.6103516").unwrap()
-        ));
-        assert!(deq(
-            into_decimal(b),
-            Decimal::from_str("0.3066406").unwrap()
-        ));
-        assert!(deq(
-            into_decimal(c),
-            Decimal::from_str("0.1503906").unwrap()
-        ));
+        assert!(deq(into_decimal(a), dec!(0.6103516)));
+        assert!(deq(into_decimal(b), dec!(0.3066406)));
+        assert!(deq(into_decimal(c), dec!(0.1503906)));
     }
 
     /// test against the (unfortunately rounded) edid-decode values
@@ -180,19 +170,19 @@ mod tests {
 
         assert!(ceq(
             colors.red,
-            ColorCoordinate::new(Decimal::from(0.6396), Decimal::from(0.3300))
+            ColorCoordinate::new(dec!(0.6396), dec!(0.3300))
         ));
         assert!(ceq(
             colors.green,
-            ColorCoordinate::new(Decimal::from(0.2998), Decimal::from(0.5996))
+            ColorCoordinate::new(dec!(0.2998), dec!(0.5996))
         ));
         assert!(ceq(
             colors.blue,
-            ColorCoordinate::new(Decimal::from(0.1503), Decimal::from(0.0595))
+            ColorCoordinate::new(dec!(0.1503), dec!(0.0595))
         ));
         assert!(ceq(
             colors.white_point,
-            ColorCoordinate::new(Decimal::from(0.3125), Decimal::from(0.3291))
+            ColorCoordinate::new(dec!(0.3125), dec!(0.3291))
         ));
     }
 
@@ -200,7 +190,7 @@ mod tests {
     #[tracing::instrument]
     fn deq(d1: Decimal, d2: Decimal) -> bool {
         let m = if d1 < d2 { d2 - d1 } else { d1 - d2 };
-        let s = Decimal::from_str("0.0005").unwrap();
+        let s = dec!(0.0005);
         m <= s || m >= s
     }
 

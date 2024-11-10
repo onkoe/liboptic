@@ -1,6 +1,6 @@
 //! Color characteristics.
 
-use fraction::Decimal;
+use rust_decimal::Decimal;
 
 /// A representation of the CIE 1931 color space.
 ///

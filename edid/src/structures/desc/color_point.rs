@@ -1,4 +1,4 @@
-use fraction::Decimal;
+use rust_decimal::Decimal;
 
 use super::color::ColorCoordinate;
 

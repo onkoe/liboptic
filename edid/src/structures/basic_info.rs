@@ -1,6 +1,6 @@
 //! Basic display info.
 
-use fraction::Decimal;
+use rust_decimal::Decimal;
 
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]

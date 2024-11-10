@@ -1,4 +1,4 @@
-use fraction::Decimal;
+use rust_decimal::Decimal;
 
 /// Tagged with 0xFD.
 ///

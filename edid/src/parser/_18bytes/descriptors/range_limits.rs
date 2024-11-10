@@ -1,5 +1,4 @@
 use bitvec::{field::BitField as _, order::Lsb0, view::BitView};
-use fraction::Decimal;
 use nobcd::BcdNumber;
 
 use crate::prelude::internal::*;
@@ -84,7 +83,7 @@ fn cvt(limits: RangeLimits, input: &[u8; 18]) -> Result<RangeLimitsDesc, EdidErr
     let enhanced_px_clk = {
         let to_sub: u8 = input[12].view_bits::<Lsb0>()[2..=7].load();
         let decimal = Decimal::from(limits.max_pixel_clock_mhz);
-        decimal - (Decimal::from(to_sub) / 4)
+        decimal - (Decimal::from(to_sub) / Decimal::from(4))
     };
 
     let maximum_active_pxls_per_line = {
@@ -355,7 +354,7 @@ mod tests {
                 max_pixel_clock_mhz: 330,
             },
 
-            enhanced_px_clk: Decimal::from(328) + (Decimal::from(3) / 4),
+            enhanced_px_clk: Decimal::from(328) + (Decimal::from(3) / Decimal::from(4)),
             cvt_version: 10,
             maximum_active_pxls_per_line: Some(160),
             supported_aspect_ratios: SupportedAspectRatios {

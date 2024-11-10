@@ -1,5 +1,4 @@
 use bitvec::{order::Lsb0, slice::BitSlice};
-use fraction::{Decimal, GenericFraction};
 
 use crate::prelude::internal::*;
 
@@ -174,8 +173,8 @@ fn make_ratio(ar: u8) -> Option<(u16, u16)> {
             }
 
             let horiz_ar = 100 + (ar as u16);
-            let frac = GenericFraction::<u16>::new(horiz_ar, 100_u16);
-            (*frac.numer()?, *frac.denom()?)
+            let frac = num_rational::Ratio::<u16>::new(horiz_ar, 100_u16);
+            (*frac.numer(), *frac.denom())
         }
     })
 }
@@ -202,7 +201,7 @@ fn gamma(input: &[u8]) -> Option<Decimal> {
         }
 
         // reverse from the standard: byte = (GAMMA x 100) – 100
-        Some((Decimal::from(byte) + 100) / Decimal::from(100))
+        Some((Decimal::from(byte) + Decimal::from(100)) / Decimal::from(100))
     }
 }
 
@@ -259,7 +258,7 @@ fn feature_support(input: &[u8]) -> FeatureSupport {
 
 #[cfg(test)]
 mod tests {
-    use fraction::Decimal;
+    use super::*;
 
     use crate::{
         parser::{
@@ -374,7 +373,7 @@ mod tests {
         logger();
         let input = crate::prelude::internal::raw_edid_by_filename("dell_s2417dg.raw.input");
         let got = super::gamma(&input).unwrap();
-        let expected = Decimal::from(2.20);
+        let expected = dec!(2.20);
 
         assert_eq!(got, expected);
     }
@@ -384,7 +383,7 @@ mod tests {
         logger();
         let input = crate::prelude::internal::edid_by_filename("1.input");
         let got = super::gamma(&input).unwrap();
-        let expected = Decimal::from(2.20);
+        let expected = dec!(2.20);
 
         assert_eq!(got, expected);
     }
@@ -396,7 +395,7 @@ mod tests {
             "linuxhw_edid_EDID_Digital_Sony_SNY05FA_93D328459FF6.input",
         );
         let got = super::gamma(&input).unwrap();
-        let expected = Decimal::from(1.0);
+        let expected = dec!(1.0);
 
         assert_eq!(got, expected);
     }
@@ -485,7 +484,7 @@ mod tests {
                 horizontal_cm: 37,
                 vertical_cm: 23,
             }),
-            reported_gamma: Some(Decimal::from(2.35)),
+            reported_gamma: Some(dec!(2.35)),
             feature_support: FeatureSupport {
                 power_management: PowerManagement {
                     standby: false,

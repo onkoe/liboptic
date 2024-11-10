@@ -1,6 +1,6 @@
 use bitvec::{order::Lsb0, view::BitView};
 use color::ColorCoordinate;
-use fraction::Decimal;
+use rust_decimal::Decimal;
 
 use crate::{
     parser::color::{into_decimal, make_u10},
@@ -130,8 +130,11 @@ mod tests {
         let expected = DisplayDescriptor::ColorPointData {
             w1: WhitePoint {
                 index_number: 1,
-                coord: ColorCoordinate::new(Decimal::from(63) / 1024, Decimal::from(1) / 2),
-                gamma: Some(Decimal::from(3.54)),
+                coord: ColorCoordinate::new(
+                    Decimal::from(63) / Decimal::from(1024),
+                    Decimal::from(1) / Decimal::from(2),
+                ),
+                gamma: Some(rust_decimal_macros::dec!(3.54)),
             },
             w2: WhitePoint {
                 index_number: 2,
@@ -154,8 +157,11 @@ mod tests {
                 <BIGGEST>
 
                 */
-                coord: ColorCoordinate::new(Decimal::from(1) / 4, Decimal::from(965) / 1024),
-                gamma: Some(Decimal::from(1.23)),
+                coord: ColorCoordinate::new(
+                    Decimal::from(1) / Decimal::from(4),
+                    Decimal::from(965) / Decimal::from(1024),
+                ),
+                gamma: Some(dec!(1.23)),
             },
         };
         tracing::warn!("EXPECTED: \n{expected:#?}");

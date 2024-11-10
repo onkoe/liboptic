@@ -31,4 +31,8 @@ pub(crate) mod internal {
 
     // errors
     pub(crate) use crate::error::EdidError;
+
+    // decimal crate
+    pub(crate) use rust_decimal::Decimal;
+    pub(crate) use rust_decimal_macros::dec;
 }

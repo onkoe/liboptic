@@ -5,4 +5,3 @@ edition = "2021"
 
 [dependencies]
 tracing = { version = "0.1.40", default-features = false, features = ["attributes"] }
-winnow = { version = "0.6.20", default-features = false, features = ["alloc"] }
