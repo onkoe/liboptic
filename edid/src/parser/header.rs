@@ -54,6 +54,6 @@ mod tests {
     fn bad() {
         logger();
         let input = edid_by_filename("bad/bad.1.input");
-        parse(&input.as_slice()).unwrap_err();
+        _ = parse(&input.as_slice()).unwrap_err();
     }
 }

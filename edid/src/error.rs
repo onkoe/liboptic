@@ -6,6 +6,9 @@ use core::{array::TryFromSliceError, error::Error, fmt::Debug};
 use pisserror::Error;
 
 /// An error that occurred while parsing EDID.
+#[repr(C)]
+#[must_use]
+#[non_exhaustive]
 #[derive(Clone, Debug, Error)]
 pub enum EdidError {
     #[error("The given EDID data isn't long enough.")]
