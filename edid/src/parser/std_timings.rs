@@ -25,9 +25,19 @@ pub(crate) fn parse(input: &[u8]) -> StandardTimings {
 /// While these aren't noted to be optional in the standard, vendors tend to
 /// treat them as if they were.
 #[tracing::instrument]
-fn one(bytes: &[u8]) -> Option<STiming> {
+pub(crate) fn one(bytes: &[u8]) -> Option<STiming> {
     // if both bytes are 1, assume unused
-    if bytes[0] == 0x01 && bytes[1] == 0x01 {
+    if (bytes[0] == 0x01 && bytes[1] == 0x01) {
+        return None;
+    }
+
+    // if the first byte is 1, also assume unused. warn about its usage.
+    if (bytes[0] == 0x01 && bytes[1] == 0x00) {
+        tracing::warn!(
+            "Standard timing used an [0x01, 0x00] to show that the timing \
+        was unused. This is against the standard. \
+        Consider using [0x01, 0x01] instead."
+        );
         return None;
     }
 
