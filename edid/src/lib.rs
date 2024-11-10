@@ -4,6 +4,11 @@
 //!
 //! Currently, this uses EDID v1.4 and does not account for any
 //! incompatbilities with earlier versions.
+//!
+//! ## Usage
+//!
+//! The only significant type in the library is [`Edid`]. Call [`Edid::new()`]
+//! with your EDID in bytes to get it parsed!
 
 #![no_std]
 
@@ -59,6 +64,24 @@ pub struct Edid {
 }
 
 impl Edid {
+    /// Creates a new `Edid` from the raw bytes of the given `edid_data`.
+    ///
+    /// Please ensure that the method you're using to read the EDID does not
+    /// return a String. Instead, it should return a byte slice. For example,
+    /// `std::fs::read` works great for this!
+    ///
+    /// ```edition2021
+    /// use liboptic_edid::Edid;
+    ///
+    /// // grab the edid file from disk
+    /// let data = std::fs::read("tests/assets/dell_s2417dg.raw.input")?;
+    ///
+    /// // and load it into the parser
+    /// let parsed_edid = Edid::new(&data)?;
+    /// assert_eq!(parsed_edid.checksum, 0x51);
+    /// #
+    /// # Ok::<(), Box<dyn core::error::Error>>(())
+    /// ```
     pub fn new(edid_data: &[u8]) -> Result<Self, EdidError> {
         parser::parse(edid_data)
     }
