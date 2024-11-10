@@ -71,8 +71,17 @@ fn one(input: &[u8; 18], edid: &[u8]) -> Result<EighteenByteBlock, EdidError> {
             DisplayDescriptor::DummyDescriptor
         }
 
+        // manufacturer
+        m if (0x00..=0x0F).contains(&m) => {
+            tracing::debug!("Got a manufacturer descriptor. (tag: `{m:x}`)");
+            DisplayDescriptor::Manufacturer { data: *input }
+        }
+
         // errors
-        0x11..=0xF6 => return Err(EdidError::DescriptorUsedReservedKind { kind_byte }),
+        tag if (0x11..=0xF6).contains(&tag) => {
+            tracing::error!("EDID supplied an 18-byte descriptor that used a reserved tag. (tag: ");
+            return Err(EdidError::DescriptorUsedReservedKind { kind_byte });
+        }
         ty => todo!("this descriptor type (`{ty:x}`) is unimplemented!"),
     };
 

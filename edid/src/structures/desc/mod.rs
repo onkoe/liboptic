@@ -153,4 +153,10 @@ pub enum DisplayDescriptor {
     ///
     /// TAG: 0x10
     DummyDescriptor,
+
+    /// Some proprietary descriptor by the display manufacturer.
+    Manufacturer {
+        /// We don't know the data, so this is just the raw 18 bytes.
+        data: [u8; 18],
+    },
 }
