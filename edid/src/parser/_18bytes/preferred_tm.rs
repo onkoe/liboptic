@@ -12,10 +12,13 @@ use crate::prelude::internal::*;
 /// This must only ever be called when at least one of the first two bytes are
 /// non-zero.
 #[tracing::instrument(skip_all)]
-pub(super) fn parse(bytes: &[u8; 18]) -> DetailedTimingDefinition {
+pub(super) fn parse(bytes: &[u8; 18]) -> Result<DetailedTimingDefinition, EdidError> {
     // ensure the first two bytes are >= [0x00, 0x01]
     if [bytes[0], bytes[1]] == [0x00, 0x00] {
-        unreachable!("passed wrong 18 byte desc. please report this with logs.");
+        tracing::error!("passed wrong 18 byte desc. please report this with logs.");
+        return Err(EdidError::DescriptorUnexpectedHeader(
+            bytes[0..5].try_into()?,
+        ));
     }
 
     // grab various components of the def
@@ -96,7 +99,7 @@ pub(super) fn parse(bytes: &[u8; 18]) -> DetailedTimingDefinition {
     // signal defs
     let (signal_interface_type, stereo_support, sync_signal) = part_2(bytes[17]);
 
-    DetailedTimingDefinition {
+    Ok(DetailedTimingDefinition {
         pixel_clock_khz,
         horizontal_addressable_video_px,
         horizontal_blanking_px,
@@ -113,7 +116,7 @@ pub(super) fn parse(bytes: &[u8; 18]) -> DetailedTimingDefinition {
         signal_interface_type,
         stereo_support,
         sync_signal,
-    }
+    })
 }
 
 /// Calcluates the pixel clock for the [0x00, 0x01] bytes
@@ -240,7 +243,7 @@ mod tests {
         let bytes: [u8; 18] = input[0x36..=0x47].try_into().unwrap();
 
         // parse the first descriptor (always a preferred timing mode!)
-        let got = super::parse(&bytes);
+        let got = super::parse(&bytes).unwrap();
 
         // prepare yourself
         let expected = DetailedTimingDefinition {

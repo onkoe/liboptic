@@ -12,7 +12,7 @@ pub(crate) fn parse(input: &[u8]) -> Result<EighteenByteDescriptors, EdidError> 
     let fourth = &input[0x6C..=0x7D];
 
     // the first one is ALWAYS a preferred timing mode.
-    let preferred_timing_mode = preferred_tm::parse(first.try_into()?);
+    let preferred_timing_mode = preferred_tm::parse(first.try_into()?)?;
 
     let blocks = [
         one(second.try_into()?, input)?,
@@ -31,7 +31,7 @@ pub(crate) fn parse(input: &[u8]) -> Result<EighteenByteDescriptors, EdidError> 
 fn one(input: &[u8; 18], edid: &[u8]) -> Result<EighteenByteBlock, EdidError> {
     // if the first two bytes aren't both zero, it's a timing definition
     if input[0] != 0x00 && input[1] != 0x00 {
-        return Ok(EighteenByteBlock::Timing(preferred_tm::parse(input)));
+        return Ok(EighteenByteBlock::Timing(preferred_tm::parse(input)?));
     }
 
     // otherwise, we're making a display descriptor.
@@ -51,9 +51,9 @@ fn one(input: &[u8; 18], edid: &[u8]) -> Result<EighteenByteBlock, EdidError> {
     let kind_byte = input[3];
     let desc = match kind_byte {
         // string friends
-        0xFF => DisplayDescriptor::ProductSerial(_13_byte_string::parse(input)),
-        0xFE => DisplayDescriptor::DataString(_13_byte_string::parse(input)),
-        0xFC => DisplayDescriptor::ProductName(_13_byte_string::parse(input)),
+        0xFF => DisplayDescriptor::ProductSerial(_13_byte_string::parse(input)?),
+        0xFE => DisplayDescriptor::DataString(_13_byte_string::parse(input)?),
+        0xFC => DisplayDescriptor::ProductName(_13_byte_string::parse(input)?),
 
         // others
         0xFD => DisplayDescriptor::DisplayRangeLimits(range_limits::parse(input, edid)?),
