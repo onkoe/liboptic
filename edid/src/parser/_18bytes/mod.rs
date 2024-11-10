@@ -61,6 +61,15 @@ fn one(input: &[u8; 18], edid: &[u8]) -> Result<EighteenByteBlock, EdidError> {
         0xFA => descriptors::more_std_timings::parse(input)?,
         0xF9 => descriptors::dcm::parse(input),
         0xF8 => descriptors::cvt::parse(input)?, // this one isn't used in ANY of 100k samples lol
+        0xF7 => descriptors::iii::parse(input)?,
+        0x10 => {
+            // check if it contains data (it shouldn't)
+            if input[5..=17].iter().map(|i| *i as u16).sum::<u16>() != 0 {
+                tracing::warn!("The EDID supplied a dummy 18-byte descriptor, but it contained data! (data: {input:?})");
+            }
+
+            DisplayDescriptor::DummyDescriptor
+        }
 
         // errors
         0x11..=0xF6 => return Err(EdidError::DescriptorUsedReservedKind { kind_byte }),
