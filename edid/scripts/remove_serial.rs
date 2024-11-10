@@ -1,6 +1,13 @@
 //! reads a display's edid from disk and reads its serial code.
 //!
 //! if it's not zero, it replaces it with `[0x00, 0x01]` and saves the file.
+//!
+//! ```cargo
+//! [dependencies]
+//! tracing-subscriber = "0.3.18"
+//! tracing = "0.1.40"
+//!
+//! ```
 
 use std::{fs::File, io::Write as _};
 
@@ -11,8 +18,9 @@ fn main() {
         .init();
 
     // open up the file
-    const PATH: &str = "tv.edid.IDENTIFIYING_INFO.raw.input";
-    let mut bytes = raw_edid_by_filename(PATH);
+    const FILENAME: &str = "some.raw.input";
+    let path = path(FILENAME);
+    let mut bytes = raw_edid_by_filename(&path);
 
     // ensure checksum calculation is correct by calculating the one that's
     // already there.
@@ -46,21 +54,24 @@ fn main() {
     );
 
     // save the file to disk
-    let mut f = File::create(
-        std::path::PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/assets")).join(PATH),
-    )
-    .unwrap();
+    let mut f = File::create(path).unwrap();
     f.write_all(&bytes).unwrap();
     tracing::info!("All done!");
 }
 
 /// Grabs a raw (not encoded) EDID from disk at `tests/assets/`
 #[tracing::instrument]
-pub(crate) fn raw_edid_by_filename(name: &str) -> Vec<u8> {
-    let path =
-        std::path::PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/assets")).join(name);
-
+pub(crate) fn raw_edid_by_filename(path: &std::path::PathBuf) -> Vec<u8> {
     std::fs::read(path).unwrap()
+}
+
+fn path(filename: &str) -> std::path::PathBuf {
+    let cwd = std::env::current_dir().unwrap();
+    if cwd.components().last().unwrap().as_os_str() == "scripts" {
+        cwd.join("../tests/assets").join(filename)
+    } else {
+        cwd.join("tests/assets").join(filename)
+    }
 }
 
 #[tracing::instrument(skip_all)]
