@@ -5,5 +5,6 @@ pub(crate) mod _13_byte_string;
 pub(crate) mod color_point;
 pub(crate) mod cvt;
 pub(crate) mod dcm;
+pub(crate) mod iii; // established timings iii
 pub(crate) mod more_std_timings;
 pub(crate) mod range_limits;

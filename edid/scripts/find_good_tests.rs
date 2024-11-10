@@ -87,7 +87,7 @@ fn run<P: AsRef<Path>>(entry_path: P) -> Option<PathBuf> {
         let _18b_data_blocks = [0x48, 0x5a, 0x6c];
 
         // the kind im looking for has these bytes
-        let wanted = [0x00, 0x00, 0x00, 0xFA];
+        let wanted = [0x00, 0x00, 0x00, 0xf7];
 
         // check each block at the given location
         if _18b_data_blocks

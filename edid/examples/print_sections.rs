@@ -4,7 +4,7 @@ use colored::Colorize;
 
 fn main() {
     // open up the file
-    const PATH: &str = "linuxhw_edid_EDID_Digital_Samsung_SAM02E3_2C47316EFF13.input";
+    const PATH: &str = "linuxhw_edid_Digital_Goldstar_GSM7666_FE91A60D5B6E.input";
     let info = edid_by_filename(PATH);
 
     use std::format as f;

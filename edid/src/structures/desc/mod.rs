@@ -92,6 +92,7 @@ pub enum DisplayDescriptor {
     ///
     /// TAG: 0xF7
     EstablishedTimingsIII {
+        // byte 6
         _640x350_85hz: bool,
         _640x400_85hz: bool,
         _720x400_85hz: bool,
@@ -101,6 +102,7 @@ pub enum DisplayDescriptor {
         _1024x768_85hz: bool,
         _1152x864_75hz: bool,
 
+        // byte 7
         _1280x768_60hz_reduced: bool,
         _1280x768_60hz: bool,
         _1280x768_75hz: bool,
@@ -110,6 +112,7 @@ pub enum DisplayDescriptor {
         _1280x1024_60hz: bool,
         _1280x1024_85hz: bool,
 
+        // byte 8
         _1360x768_60hz: bool,
         _1440x900_60hz_reduced: bool,
         _1440x900_60hz: bool,
@@ -119,6 +122,7 @@ pub enum DisplayDescriptor {
         _1400x1050_60hz: bool,
         _1400x1050_75hz: bool,
 
+        // byte 9
         _1400x1050_85hz: bool,
         _1680x1050_60hz_reduced: bool,
         _1680x1050_60hz: bool,
@@ -128,6 +132,7 @@ pub enum DisplayDescriptor {
         _1600x1200_65hz: bool,
         _1600x1200_70hz: bool,
 
+        // byte 10
         _1600x1200_75hz: bool,
         _1600x1200_85hz: bool,
         _1792x1344_60hz: bool,
@@ -137,6 +142,7 @@ pub enum DisplayDescriptor {
         _1920x1200_60hz_reduced: bool,
         _1920x1200_60hz: bool,
 
+        // byte 11
         _1920x1200_75hz: bool,
         _1920x1200_85hz: bool,
         _1920x1440_60hz: bool,
