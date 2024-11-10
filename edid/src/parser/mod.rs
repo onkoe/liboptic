@@ -31,11 +31,21 @@ pub fn parse(input: &[u8]) -> Result<Edid, EdidError> {
     };
 
     // finalized checks
-    if input[0x18] == 1 {
-        todo!(
-            "Ensure Display Range Limits are included as a block in the base \
-        EDID. See pg. 40, table 3.26, note 1."
-        )
+    {
+        // when the display is cont. freq., we check if the display range limits
+        // descriptor is given
+        let has_range_desc = !edid.eighteen_byte_data_blocks.blocks.iter().any(|b| {
+            matches!(
+                b,
+                EighteenByteBlock::Display(DisplayDescriptor::DisplayRangeLimits(_))
+            )
+        });
+        if input[0x18] == 1 && has_range_desc {
+            tracing::warn!(
+                "This EDID is for a continuous display, but it didn't not contain \
+            the required Display Range Limits and Timing Descriptor."
+            );
+        }
     }
 
     Ok(edid)
