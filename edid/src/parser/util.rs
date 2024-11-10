@@ -26,6 +26,11 @@ pub(crate) fn edid_by_filename(name: &str) -> alloc::vec::Vec<u8> {
     let s = std::fs::read_to_string(path)
         .unwrap()
         .replace([' ', '\n'], "");
+
+    if s.contains("edid-decode") {
+        panic!("you forgot to remove the edid-decode stuff from the input test file");
+    }
+
     hex::decode(s.trim()).unwrap()
 }
 
