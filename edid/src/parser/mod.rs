@@ -17,14 +17,18 @@ pub fn parse(input: &mut &[u8]) -> Result<Edid, EdidError> {
     // make sure header's right
     header::parse(input)?;
 
-    // grab vendor + product info
-    let _vendor_product_info = id::parse(input)?;
-
-    // edid standard version + revision
-    let _rnv = version::parse(input)?;
-
     // construct the type
-    // (todo)
+    let edid = Edid {
+        vendor_product_info: id::parse(input)?,
+        version: version::parse(input)?,
+        basic_display_info: basic_info::parse(input),
+        color_characteristics: color::parse(input),
+        established_timings: est_timings::parse(input),
+        standard_timings: std_timings::parse(input),
+        eighteen_byte_data_blocks: _18bytes::parse(input)?,
+        extension_info: input[0x7E],
+        checksum: checksum(input),
+    };
 
     // finalized checks
     if input[0x18] == 1 {
@@ -34,7 +38,7 @@ pub fn parse(input: &mut &[u8]) -> Result<Edid, EdidError> {
         )
     }
 
-    todo!()
+    Ok(edid)
 }
 
 fn check_length(input: &&[u8]) -> Result<(), EdidError> {
