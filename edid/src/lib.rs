@@ -48,8 +48,14 @@ pub struct Edid {
     /// timings.
     pub eighteen_byte_data_blocks: _18bytes::EighteenByteDescriptors,
 
-    /// Info about the E-EDID extensions this EDID carries behind it.
-    extension_info: extension::ExtensionInfo,
+    /// The number of extension blocks (including optional block map/s) that
+    /// follow the base EDID.
+    ///
+    /// Limited up to 255, as indicated by the type.
+    pub extension_info: u8,
+
+    /// Some value that makes the EDID's checksum be 0x00.
+    pub checksum: u8,
 }
 
 impl Edid {
