@@ -4,7 +4,7 @@ use cvt_3_byte_timing::TimingCodeDesc;
 
 use crate::prelude::internal::*;
 
-use super::{color::ColorCoordinate, std_timings::STiming};
+use super::std_timings::STiming;
 
 pub mod color_point;
 pub mod cvt_3_byte_timing;
@@ -46,12 +46,12 @@ pub enum DisplayDescriptor {
     ///
     /// TAG: 0xFA
     StandardTimingIdentifications {
-        _9: STiming,
-        _10: STiming,
-        _11: STiming,
-        _12: STiming,
-        _13: STiming,
-        _14: STiming,
+        _9: Option<STiming>,
+        _10: Option<STiming>,
+        _11: Option<STiming>,
+        _12: Option<STiming>,
+        _13: Option<STiming>,
+        _14: Option<STiming>,
     },
 
     /// aka "Display Color Management".
