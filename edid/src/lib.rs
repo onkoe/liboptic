@@ -10,7 +10,7 @@
 pub mod error;
 mod parser;
 mod prelude;
-pub mod structures; // TODO: re-export with prelude instead
+pub mod structures;
 
 use crate::prelude::internal::*;
 
@@ -25,9 +25,6 @@ pub const LATEST_SUPPORTED_REVISION: u8 = 0x04;
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct Edid {
-    /// A static identifier for EDID structures. Should always be here.
-    header: [u8; 8],
-
     /// Info about the product vendor.
     vendor_product_info: id::VendorProductId,
 
