@@ -27,6 +27,10 @@ pub enum EdidError {
     #[error("The parser was incorrectly given a `0x00` code.")]
     IdNoZeroesAllowed,
 
+    // basic info
+    #[error("During basic info parsing, the given interface bits were not valid: {_0:?}")]
+    BasicInfoBadInterface([bool; 4]),
+
     // 18 byte blocks
     #[error("This EDID contained a reserved descriptor kind byte: `{kind_byte}`.")]
     DescriptorUsedReservedKind { kind_byte: u8 },

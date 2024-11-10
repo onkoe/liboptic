@@ -5,26 +5,26 @@ use crate::prelude::internal::*;
 
 /// Parses out some basic info about the display.
 #[tracing::instrument]
-pub(super) fn parse(input: &[u8]) -> BasicDisplayInfo {
-    let input_definition = video_input_definition(input[0x14]);
+pub(super) fn parse(input: &[u8]) -> Result<BasicDisplayInfo, EdidError> {
+    let input_definition = video_input_definition(input[0x14])?;
     let screen_size_or_aspect_ratio = size_or_ratio(input);
     let reported_gamma = gamma(input);
     let feature_support = feature_support(input);
 
-    BasicDisplayInfo {
+    Ok(BasicDisplayInfo {
         input_definition,
         screen_size_or_aspect_ratio,
         reported_gamma,
         feature_support,
-    }
+    })
 }
 
 #[tracing::instrument]
-fn video_input_definition(byte: u8) -> VideoSignalInterface {
+fn video_input_definition(byte: u8) -> Result<VideoSignalInterface, EdidError> {
     // using lsb to keep the bit numbering consistent.
     let bits: &BitSlice<u8, Lsb0> = BitSlice::from_element(&byte);
 
-    fn digital(bits: &BitSlice<u8, Lsb0>) -> VideoSignalInterface {
+    fn digital(bits: &BitSlice<u8, Lsb0>) -> Result<VideoSignalInterface, EdidError> {
         let color_bit_depth = match (bits[6], bits[5], bits[4]) {
             (false, false, false) => ColorBitDepth::Undefined,
             (false, false, true) => ColorBitDepth::D6Bits,
@@ -43,23 +43,24 @@ fn video_input_definition(byte: u8) -> VideoSignalInterface {
             tracing::debug!("digitial interface is not reported.");
             None
         } else {
-            Some(match (bits[3], bits[2], bits[1], bits[0]) {
-                (false, false, false, true) => SupportedVideoInterface::Dvi,
-                (false, false, true, false) => SupportedVideoInterface::HdmiA,
-                (false, false, true, true) => SupportedVideoInterface::HdmiB,
-                (false, true, false, false) => SupportedVideoInterface::Mddi,
-                (false, true, false, true) => SupportedVideoInterface::DisplayPort,
+            let di_bits = [bits[3], bits[2], bits[1], bits[0]];
+            Some(match di_bits {
+                [false, false, false, true] => SupportedVideoInterface::Dvi,
+                [false, false, true, false] => SupportedVideoInterface::HdmiA,
+                [false, false, true, true] => SupportedVideoInterface::HdmiB,
+                [false, true, false, false] => SupportedVideoInterface::Mddi,
+                [false, true, false, true] => SupportedVideoInterface::DisplayPort,
                 reserved => {
                     tracing::error!("Got an unexpected digital video interface standard bit layout: `{reserved:#?}`");
-                    unreachable!();
+                    return Err(EdidError::BasicInfoBadInterface(di_bits));
                 }
             })
         };
 
-        VideoSignalInterface::Digital {
+        Ok(VideoSignalInterface::Digital {
             color_bit_depth,
             supported_interface: digital_interface,
-        }
+        })
     }
 
     fn analog(bits: &BitSlice<u8, Lsb0>) -> VideoSignalInterface {
@@ -99,7 +100,7 @@ fn video_input_definition(byte: u8) -> VideoSignalInterface {
     if bits[7] {
         digital(bits)
     } else {
-        analog(bits)
+        Ok(analog(bits))
     }
 }
 
@@ -283,7 +284,7 @@ mod tests {
     fn dell_s2417dg_vsi() {
         logger();
         let input = crate::prelude::internal::raw_edid_by_filename("dell_s2417dg.raw.input");
-        let got = super::video_input_definition(input[0x14]);
+        let got = super::video_input_definition(input[0x14]).unwrap();
 
         let expected = VideoSignalInterface::Digital {
             color_bit_depth: ColorBitDepth::D8Bits,
@@ -297,7 +298,7 @@ mod tests {
     fn that_guys_laptop_vsi() {
         logger();
         let input = crate::prelude::internal::edid_by_filename("1.input");
-        let got = super::video_input_definition(input[0x14]);
+        let got = super::video_input_definition(input[0x14]).unwrap();
 
         let expected = VideoSignalInterface::Digital {
             color_bit_depth: ColorBitDepth::D6Bits,
@@ -473,7 +474,7 @@ mod tests {
             "linuxhw_edid_EDID_Digital_Samsung_SAM02E3_2C47316EFF13.input",
         );
 
-        let got = super::parse(&input);
+        let got = super::parse(&input).unwrap();
         let expected = BasicDisplayInfo {
             // this is gonna be a long one lol
             input_definition: VideoSignalInterface::Digital {

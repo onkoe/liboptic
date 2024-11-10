@@ -21,7 +21,7 @@ pub fn parse(input: &[u8]) -> Result<Edid, EdidError> {
     let edid = Edid {
         vendor_product_info: id::parse(input)?,
         version: version::parse(input)?,
-        basic_display_info: basic_info::parse(input),
+        basic_display_info: basic_info::parse(input)?,
         color_characteristics: color::parse(input),
         established_timings: est_timings::parse(input),
         standard_timings: std_timings::parse(input),
