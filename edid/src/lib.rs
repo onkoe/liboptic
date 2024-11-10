@@ -26,27 +26,27 @@ pub const LATEST_SUPPORTED_REVISION: u8 = 0x04;
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct Edid {
     /// Info about the product vendor.
-    vendor_product_info: id::VendorProductId,
+    pub vendor_product_info: id::VendorProductId,
 
     /// The version + revision that this EDID was created for.
-    version: version::EdidVersion,
+    pub version: version::EdidVersion,
 
     /// Basic info about the display, indicating important things like the
     /// its input and screen size.
-    basic_display_info: basic_info::BasicDisplayInfo,
+    pub basic_display_info: basic_info::BasicDisplayInfo,
 
     /// Info about this display's placements in the CIE 1931 color space.
-    color_characteristics: color::ColorCharacteristics,
+    pub color_characteristics: color::ColorCharacteristics,
 
     /// Various hardcoded timing booleans.
-    esablished_timings: est_timings::EstablishedTimings,
+    pub esablished_timings: est_timings::EstablishedTimings,
 
     /// Dynamic timings.
-    standard_timings: std_timings::StandardTimings,
+    pub standard_timings: std_timings::StandardTimings,
 
     /// Four 18-byte data blocks with info about the display and/or its
     /// timings.
-    eighteen_byte_data_blocks: _18bytes::EighteenByteDescriptors,
+    pub eighteen_byte_data_blocks: _18bytes::EighteenByteDescriptors,
 
     /// Info about the E-EDID extensions this EDID carries behind it.
     extension_info: extension::ExtensionInfo,
