@@ -29,11 +29,6 @@ pub enum EdidError {
     IdNoZeroesAllowed,
 
     // 18 byte blocks
-    #[error(
-        "The EDID has a weird 18-byte descriptor. It's not a timing, but didn't \
-    include the reserved byte. It has byte `{malformed_byte}` instead!"
-    )]
-    AmbiguousDescriptor { malformed_byte: u8 },
     #[error("This EDID contained a reserved descriptor kind byte: `{kind_byte}`.")]
     DescriptorUsedReservedKind { kind_byte: u8 },
     #[error("Range limits descriptor found reserved bits set: `{input:x?}`.")]

@@ -35,19 +35,16 @@ fn one(input: &[u8; 18], edid: &[u8]) -> Result<EighteenByteBlock, EdidError> {
     }
 
     // otherwise, we're making a display descriptor.
-    //
-    // let's make sure it has the required reserved byte.
     {
-        let reserved = input[2];
-        if reserved != 0x00 {
-            tracing::error!("EDID contained ambiguous descriptor! Malformed byte: `{reserved}`");
-            return Err(EdidError::AmbiguousDescriptor {
-                malformed_byte: reserved,
-            });
+        // let's check the reserved bytes
+        let header = &input[0..5];
+        if !matches!(header, [0x00, 0x00, 0x00, _, 0x00]) {
+            tracing::error!("Given descriptor data had a malformed header: {header:x?}");
+            return Err(EdidError::DescriptorUnexpectedHeader(header.try_into()?));
         }
     }
 
-    // okay! we know that it's some kind of descriptor.
+    // okay! we've confirmed that it's a valid descriptor.
     //
     // the specific kind we're making is indicated at byte 3. let's see what
     // that is and call the appropriate parser
