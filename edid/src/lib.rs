@@ -82,7 +82,7 @@ impl Edid {
     /// #
     /// # Ok::<(), Box<dyn core::error::Error>>(())
     /// ```
-    pub fn new(edid_data: &[u8]) -> Result<Self, EdidError> {
-        parser::parse(edid_data)
+    pub fn new<Slice: AsRef<[u8]>>(edid_data: Slice) -> Result<Self, EdidError> {
+        parser::parse(edid_data.as_ref())
     }
 }
