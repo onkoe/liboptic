@@ -60,6 +60,8 @@ fn one(input: &[u8; 18], edid: &[u8]) -> Result<EighteenByteBlock, EdidError> {
 
         // others
         0xFD => DisplayDescriptor::DisplayRangeLimits(range_limits::parse(input, edid)?),
+        0xFB => descriptors::color_point::parse(input),
+        0xFA => descriptors::more_std_timings::parse(input)?,
 
         // errors
         0x11..=0xF6 => return Err(EdidError::DescriptorUsedReservedKind { kind_byte }),
