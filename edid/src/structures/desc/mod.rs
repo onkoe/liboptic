@@ -54,7 +54,7 @@ pub enum DisplayDescriptor {
         _14: Option<STiming>,
     },
 
-    /// aka "Display Color Management".
+    /// aka "Display Color Management". These are the unparsed values.
     ///
     /// TAG: 0xF9
     DcmData {
