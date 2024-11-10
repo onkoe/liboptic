@@ -39,7 +39,7 @@ pub struct Edid {
     pub color_characteristics: color::ColorCharacteristics,
 
     /// Various hardcoded timing booleans.
-    pub esablished_timings: est_timings::EstablishedTimings,
+    pub established_timings: est_timings::EstablishedTimings,
 
     /// Dynamic timings.
     pub standard_timings: std_timings::StandardTimings,
