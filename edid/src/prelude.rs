@@ -7,7 +7,7 @@ pub(crate) mod internal {
 
     // structure modules
     pub(crate) use crate::structures::{
-        _18bytes, basic_info, color, est_timings, extension, id, std_timings, version,
+        _18bytes, basic_info, color, est_timings, id, std_timings, version,
     };
 
     pub use crate::std_timings::{STiming, StandardAspectRatio, StandardTimings};
