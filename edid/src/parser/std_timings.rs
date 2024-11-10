@@ -42,7 +42,7 @@ pub(crate) fn one(bytes: &[u8]) -> Option<STiming> {
     }
 
     // from [256, 2288] px
-    let horizontal_addr_pixel_ct = hoz_addr_pixels(bytes[0]);
+    let horizontal_addr_pixel_ct = hoz_addr_pixels(bytes[0])?;
 
     // split the other byte into bits
     let bits: &bitvec::prelude::BitSlice<u8> = bytes[1].view_bits();
@@ -67,12 +67,15 @@ pub(crate) fn one(bytes: &[u8]) -> Option<STiming> {
 
 /// Finds the number of horizontal addressable pixels from the given value.
 #[tracing::instrument]
-fn hoz_addr_pixels(ct: u8) -> u16 {
+fn hoz_addr_pixels(ct: u8) -> Option<u16> {
     if ct == 0x00 {
-        unreachable!("hoz addr pixels... reserved: do not use");
+        tracing::warn!(
+            "Standard timing used 0x00 pixel count, which isn't permitted. Returning None."
+        );
+        return None;
     }
 
-    (ct as u16 + 31) * 8
+    Some((ct as u16 + 31) * 8)
 }
 
 #[cfg(test)]
