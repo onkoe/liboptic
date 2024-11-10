@@ -52,3 +52,19 @@ fn check_length(input: &&[u8]) -> Result<(), EdidError> {
 
     Ok(())
 }
+
+/// Returns the checksum byte to the user.
+#[tracing::instrument]
+fn checksum(input: &[u8]) -> u8 {
+    let sum = |bytes: &[u8]| bytes.iter().map(|b| *b as u32).sum::<u32>();
+
+    // warn the user if the checksum is wrong
+    let all = sum(&input[..=0x7F]) % 256;
+    if all != 0x00 {
+        tracing::error!(
+            "The given EDID failed its checksum. It will still be included in the type."
+        );
+    }
+
+    input[0x7F]
+}
