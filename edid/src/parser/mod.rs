@@ -82,3 +82,19 @@ fn checksum(input: &[u8]) -> u8 {
 
     input[0x7F]
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn dell_s2417dg_edid() {
+        logger();
+        let name = "dell_s2417dg.raw.input";
+        let input = raw_edid_by_filename(name);
+
+        let _got = super::parse(&input).unwrap();
+
+        // todo: remake that entire damn edid
+    }
+}
