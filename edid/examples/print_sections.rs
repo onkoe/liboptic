@@ -99,7 +99,7 @@ pub(crate) fn raw_edid_by_filename(name: &str) -> Vec<u8> {
     let path =
         std::path::PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/assets")).join(name);
 
-    std::fs::read("/sys/class/drm/card1-DP-3/edid").unwrap()
+    std::fs::read(path).unwrap()
 }
 
 /// Grabs an EDID from disk at `tests/assets/`
@@ -110,5 +110,27 @@ pub(crate) fn edid_by_filename(name: &str) -> Vec<u8> {
     let s = std::fs::read_to_string(path)
         .unwrap()
         .replace([' ', '\n'], "");
+    hex::decode(s.trim()).unwrap()
+}
+
+/// Grabs edid-decode output from disk and reads its hex values only.
+///
+/// Takes a PATH, not a NAME!!!
+#[tracing::instrument(skip_all)]
+pub(crate) fn edid_decode_file_output(path: impl AsRef<std::path::Path>) -> Vec<u8> {
+    let path = path.as_ref();
+    let s = std::fs::read_to_string(path).unwrap();
+
+    // if it's there, remove the title
+    let s = s.replace("edid-decode (hex):", "");
+
+    // split on the dashes
+    let v: Vec<&str> = s.split("----------------").collect();
+    let s = v.first().unwrap().trim();
+
+    // remove whitespace
+    let s = s.replace([' ', '\n'], "");
+
+    // parse out the hex
     hex::decode(s.trim()).unwrap()
 }
