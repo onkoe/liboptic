@@ -97,4 +97,18 @@ mod tests {
 
         // todo: remake that entire damn edid
     }
+
+    /// try some edid v1.3s to ensure a least a lil compatability
+    #[test]
+    fn edid_v1_3() {
+        parse(&edid_by_filename(
+            "linuxhw_edid_Digital_MSI_MSIAF82_4B2991D4299A.input",
+        ))
+        .unwrap();
+
+        parse(&edid_by_filename(
+            "linuxhw_edid_Analog_AOC_AOC0320_455954E7CA14.input",
+        ))
+        .unwrap();
+    }
 }
