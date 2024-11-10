@@ -63,6 +63,7 @@ fn one(input: &[u8; 18], edid: &[u8]) -> Result<EighteenByteBlock, EdidError> {
         0xFB => descriptors::color_point::parse(input),
         0xFA => descriptors::more_std_timings::parse(input)?,
         0xF9 => descriptors::dcm::parse(input),
+        0xF8 => descriptors::cvt::parse(input)?, // this one isn't used in ANY of 100k samples lol
 
         // errors
         0x11..=0xF6 => return Err(EdidError::DescriptorUsedReservedKind { kind_byte }),

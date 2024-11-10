@@ -12,10 +12,10 @@ pub struct TimingCodeDesc {
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub enum CvtAspectRatio {
-    _4x3,
-    _16x9,
-    _16x10,
-    _15x9,
+    _4_3,
+    _16_9,
+    _16_10,
+    _15_9,
 }
 
 /// The referred vertical rate.
