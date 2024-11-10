@@ -1,6 +1,12 @@
 [package]
 name = "liboptic_edid"
+description = "Parses EDIDs from raw bytes (in 100% Rust)"
 version = "0.1.0"
+license = "MPL-2.0"
+repository = "https://github.com/onkoe/liboptic"
+readme = "./README.md"
+keywords = ["edid", "edid-decode", "liboptic"]
+categories = ["embedded", "encoding", "no-std"]
 edition = "2021"
 
 [dependencies]
