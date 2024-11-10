@@ -59,7 +59,7 @@ pub struct Edid {
 }
 
 impl Edid {
-    pub fn new(edid_data: &mut &[u8]) -> Result<Self, EdidError> {
+    pub fn new(edid_data: &[u8]) -> Result<Self, EdidError> {
         parser::parse(edid_data)
     }
 }

@@ -10,7 +10,7 @@ mod version;
 
 use crate::prelude::internal::*;
 
-pub fn parse(input: &mut &[u8]) -> Result<Edid, EdidError> {
+pub fn parse(input: &[u8]) -> Result<Edid, EdidError> {
     // check the length
     check_length(input)?;
 
@@ -41,7 +41,7 @@ pub fn parse(input: &mut &[u8]) -> Result<Edid, EdidError> {
     Ok(edid)
 }
 
-fn check_length(input: &&[u8]) -> Result<(), EdidError> {
+fn check_length(input: &[u8]) -> Result<(), EdidError> {
     let expected_len = 0x7F;
     let real_len = input.len();
 
