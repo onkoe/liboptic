@@ -270,7 +270,7 @@ fn limit_offsets(byte: u8) -> Result<Offsets, EdidError> {
 
 /// Wraps the BCD-encoded number in a helpful type.
 #[tracing::instrument]
-fn typed_bcd(input: u8) -> Result<BcdNumber<1>, EdidError> {
+fn typed_bcd(input: u8) -> Result<BcdNumber<2>, EdidError> {
     let bcd = BcdNumber::new(input).map_err(|e| {
         tracing::error!("Failed to create BcdNumber. (err: {e:?})");
         EdidError::BcdError
