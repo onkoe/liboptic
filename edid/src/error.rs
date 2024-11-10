@@ -1,6 +1,5 @@
 extern crate alloc;
 use alloc::format;
-use arrayvec::ArrayString;
 
 use core::{array::TryFromSliceError, error::Error, fmt::Debug};
 use pisserror::Error;
@@ -21,8 +20,8 @@ pub enum EdidError {
     NoHeader,
 
     // id
-    #[error("Couldn't find the header's manufacturer from its PNP ID.")]
-    NoMatchingManufacturer(ArrayString<3>),
+    #[error("Failed to parse the vendor ID values into ASCII: {_0:x?}")]
+    IdBadValues([u8; 2]),
     #[error("Failed to find suitable Rust character for given value: {_0}")]
     CharOutOfBounds(u8),
     #[error("The parser was incorrectly given a `0x00` code.")]

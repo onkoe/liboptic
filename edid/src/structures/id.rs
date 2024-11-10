@@ -5,7 +5,7 @@ use arrayvec::ArrayString;
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct VendorProductId {
     /// The name of the display's manufacturer.
-    pub manufacturer_name: ArrayString<{ pnpid::MAX_LEN }>,
+    pub manufacturer_name: Manufacturer,
 
     /// The manufacturer-unique identifier for this display.
     pub product_code: u16,
@@ -15,6 +15,17 @@ pub struct VendorProductId {
 
     /// Info about when the display came from.
     pub date: Date,
+}
+
+/// The display's manufacturer.
+///
+/// This differentiates between vendors with PNP IDs and those who are
+/// non-compliant.
+#[repr(C)]
+#[derive(Clone, Debug, PartialEq, PartialOrd)]
+pub enum Manufacturer {
+    Name(ArrayString<{ pnpid::MAX_LEN }>),
+    Id(ArrayString<3>),
 }
 
 /// Info about the date the display came from, either in terms of

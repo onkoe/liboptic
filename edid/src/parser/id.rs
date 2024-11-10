@@ -4,6 +4,7 @@
 
 use arrayvec::ArrayString;
 use bitvec::{field::BitField, order::Msb0, view::BitView};
+use id::Manufacturer;
 
 use crate::structures::{self, id::VendorProductId};
 
@@ -76,7 +77,7 @@ pub(super) fn parse(input: &[u8]) -> Result<VendorProductId, EdidError> {
 /// The input should always be exactly two elements long, containing three
 /// 5-bit ASCII values.
 #[tracing::instrument]
-fn vendor(input: &mut [u8; 2]) -> Result<ArrayString<{ pnpid::MAX_LEN }>, EdidError> {
+fn vendor(input: &mut [u8; 2]) -> Result<Manufacturer, EdidError> {
     // let's grab the PNP ID.
     let bits = input[0..=1].view_bits_mut::<Msb0>();
 
@@ -90,8 +91,8 @@ fn vendor(input: &mut [u8; 2]) -> Result<ArrayString<{ pnpid::MAX_LEN }>, EdidEr
         ])
     })()
     .ok_or_else(|| {
-        tracing::error!("Failed to load required bits for PNP ID parsing.");
-        EdidError::NoMatchingManufacturer(ArrayString::new_const())
+        tracing::error!("Failed to load required bits for PNP ID parsing. Just sending an ID...");
+        EdidError::IdBadValues(*input)
     })?;
     tracing::trace!("Found all three `u5` values. ({:#?})", &arr);
 
@@ -107,17 +108,22 @@ fn vendor(input: &mut [u8; 2]) -> Result<ArrayString<{ pnpid::MAX_LEN }>, EdidEr
     tracing::trace!("Created ArrayString. (`{}`)", string);
 
     // let's try to find the its name from their pnp id
-    let company_name = pnpid::company_from_pnp_id(string.as_str()).ok_or_else(|| {
-        tracing::error!("Failed to find company name from the EDID's PNP ID: `{string}`.");
-        EdidError::NoMatchingManufacturer(string)
-    })?;
+    Ok(match pnpid::company_from_pnp_id(string.as_str()) {
+        Some(name) => {
+            tracing::debug!("Got a company name! (`{name}`)");
 
-    tracing::debug!("Got a company name! (`{company_name}`)");
+            // finally, return the company name
+            let n = ArrayString::<{ pnpid::MAX_LEN }>::from(name).map_err(|e| {
+                tracing::error!("Couldn't fit company name into ArrayString! (err: {e})");
+                EdidError::ArrayStringError
+            })?;
 
-    // finally, return the company name
-    ArrayString::<{ pnpid::MAX_LEN }>::from(company_name).map_err(|e| {
-        tracing::error!("Couldn't fit company name into ArrayString! (err: {e})");
-        EdidError::ArrayStringError
+            Manufacturer::Name(n)
+        }
+        None => {
+            tracing::warn!("Failed to find company name from the EDID's PNP ID: `{string}`.");
+            Manufacturer::Id(string)
+        }
     })
 }
 
@@ -156,7 +162,7 @@ fn convert_5bit_ascii(code: u8) -> Result<char, EdidError> {
 
 #[cfg(test)]
 mod tests {
-    use super::{convert_5bit_ascii, convert_5bit_ascii_slice};
+    use super::*;
     use crate::{prelude::internal::logger, structures::id::Date};
 
     #[test]
@@ -175,7 +181,10 @@ mod tests {
         assert_eq!(year, 2018);
 
         // vendor
-        assert_eq!(vendor_product_info.manufacturer_name, *"Dell Inc.");
+        assert_eq!(
+            vendor_product_info.manufacturer_name,
+            Manufacturer::Name(ArrayString::from("Dell Inc.").unwrap())
+        );
 
         // model
         assert_eq!(vendor_product_info.product_code, 41191);
@@ -200,7 +209,10 @@ mod tests {
         assert_eq!(year, 2012);
 
         // vendor
-        assert_eq!(vendor_product_info.manufacturer_name, *"DO NOT USE - AUO");
+        assert_eq!(
+            vendor_product_info.manufacturer_name,
+            Manufacturer::Name(ArrayString::from("DO NOT USE - AUO").unwrap())
+        );
 
         // model
         assert_eq!(vendor_product_info.product_code, 8237);
