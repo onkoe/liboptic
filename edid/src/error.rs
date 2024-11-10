@@ -42,6 +42,8 @@ pub enum EdidError {
     DescriptorRangeLimitsUsedReservedVTSFlag { flag: u8 },
     #[error("Range limits descriptor (CVT) contained reserved values.")]
     DescriptorRangeLimitsCvtReservedBits,
+    #[error("Descriptor used an unexpected value within the first five bytes. (bytes: {_0:x?})")]
+    DescriptorUnexpectedHeader([u8; 5]),
 
     // misc (logic errors that were noticed in other crates)
     #[error("An ArrayString had an overflow. Please report this alongside any logs.")]
