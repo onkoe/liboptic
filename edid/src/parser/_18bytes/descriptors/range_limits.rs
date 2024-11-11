@@ -43,7 +43,7 @@ pub(crate) fn parse(input: &[u8; 18], edid: &[u8]) -> Result<RangeLimitsDesc, Ed
         }
         reserved => {
             tracing::error!(
-                "The given descriptor used a reserved video timing support flag! (`reserved`)"
+                "The given descriptor used a reserved video timing support flag! (`{reserved:x?}`)"
             );
             return Err(EdidError::DescriptorRangeLimitsUsedReservedVTSFlag { flag: reserved });
         }
