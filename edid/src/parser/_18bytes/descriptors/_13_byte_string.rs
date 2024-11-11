@@ -13,8 +13,26 @@ pub(crate) fn parse(input: &[u8; 18]) -> Result<ArrayString<13>, EdidError> {
     // make an arraystring (string on the stack w/ static size).
     //
     // we don't use the first five bytes, and the other 13 are ascii chars
-    let bytes = input[5..=17].try_into()?;
-    ArrayString::from_byte_string(bytes).map_err(|e| {
+    let bytes: &[u8; 13] = input[5..=17].try_into()?;
+
+    let mut ascii_bytes: [u8; 13] = [0x20; 13];
+
+    // fix up weird text
+    for (idx, byte) in bytes.iter().enumerate() {
+        // rust doesn't like it when you go over 128, as that leads to regional
+        // adaptations of ascii. we'll skip any of those and warn the user.
+        if *byte >= 128 {
+            tracing::warn!(
+                "Attempted to use regional character in ASCII string ({byte}). \
+            This character will be replaced with `?`."
+            );
+            ascii_bytes[idx] = b'?';
+        } else {
+            ascii_bytes[idx] = *byte;
+        }
+    }
+
+    ArrayString::from_byte_string(&ascii_bytes).map_err(|e| {
         tracing::error!(
             "Failed to make string from given 13-byte values: (err: {e}, values: {bytes:?})"
         );
