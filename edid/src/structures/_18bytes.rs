@@ -6,9 +6,14 @@ use crate::structures::desc::DisplayDescriptor;
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct EighteenByteDescriptors {
-    /// The video timing mode that produces the "best quality image"
-    /// according to the display's manufacturer.
-    pub preferred_timing_mode: timing::DetailedTimingDefinition,
+    /// In EDID v1.3 and v1.4, this always contains the video timing mode that
+    /// produces the "best quality image" according to the display's
+    /// manufacturer.
+    ///
+    /// However, earlier versions of EDID may not always contain this block
+    /// (a [`DetailedTimingDefinition`]), so for compatibility, it is
+    /// typed as an [`EighteenByteBlock`].
+    pub preferred_timing_mode: EighteenByteBlock,
 
     /// Three additional blocks with information about the display.
     pub blocks: [EighteenByteBlock; 3],
@@ -19,7 +24,9 @@ pub struct EighteenByteDescriptors {
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub enum EighteenByteBlock {
+    /// It's a timing definition block.
     Timing(timing::DetailedTimingDefinition),
+    /// It's a generic descriptor! It may contain many different kinds of data.
     Display(DisplayDescriptor),
 }
 

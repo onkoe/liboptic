@@ -13,6 +13,9 @@ pub mod display_range_limits;
 /// A byte "string" comprised of alphanumerics.
 pub type ByteStr13 = ArrayString<13>;
 
+/// An 18-byte long descriptor containing information about the display.
+///
+/// These are sometimes called "Monitor Descriptors" in older EDID revisions.
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub enum DisplayDescriptor {

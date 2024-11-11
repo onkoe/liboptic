@@ -4,6 +4,7 @@ use descriptors::{range_limits, *};
 mod descriptors;
 mod preferred_tm;
 
+/// Parses out the four 18-byte descriptors from the user's provided EDID input.
 #[tracing::instrument(skip_all)]
 pub(crate) fn parse(input: &[u8]) -> Result<EighteenByteDescriptors, EdidError> {
     let first = &input[0x36..=0x47];
@@ -11,8 +12,18 @@ pub(crate) fn parse(input: &[u8]) -> Result<EighteenByteDescriptors, EdidError> 
     let third = &input[0x5A..=0x6B];
     let fourth = &input[0x6C..=0x7D];
 
-    // the first one is ALWAYS a preferred timing mode.
-    let preferred_timing_mode = preferred_tm::parse(first.try_into()?)?;
+    // in EDID v1.3 and v1.4, the first 18-byte block will have the display's
+    // preferred timings.
+    //
+    // however, this isn't always the case on earlier versions, so the name may
+    // not match the type.
+    let preferred_timing_mode = one(first.try_into()?, input)?;
+    if matches!(preferred_timing_mode, EighteenByteBlock::Display(_)) {
+        tracing::warn!(
+            "The first 18-byte block was not a preferred timing descriptor. \
+        In EDID v1.3 and v1.4, this is not conformant with the standard."
+        );
+    }
 
     let blocks = [
         one(second.try_into()?, input)?,
