@@ -55,7 +55,7 @@ mod tests {
         let got = parse(&bytes).unwrap();
         tracing::info!("got: {got}");
 
-        let expected = ArrayString::from("THISISATEST").unwrap();
+        let expected = ArrayString::from_byte_string(b"THISISATEST\n ").unwrap();
         tracing::warn!("expected: {expected}");
 
         assert_eq!(got, expected);
@@ -72,7 +72,7 @@ mod tests {
         let got = parse(&bytes).unwrap();
         tracing::info!("got: {got}");
 
-        let expected = ArrayString::from("A0123456789").unwrap();
+        let expected = ArrayString::from_byte_string(b"A0123456789\n ").unwrap();
         tracing::warn!("expected: {expected}");
 
         assert_eq!(got, expected);
