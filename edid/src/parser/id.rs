@@ -11,7 +11,7 @@ use crate::structures::{self, id::VendorProductId};
 use crate::prelude::internal::*;
 
 /// Parses out the `VendorProductId` given the raw input.
-#[tracing::instrument]
+#[tracing::instrument(skip_all)]
 pub(super) fn parse(input: &[u8]) -> Result<VendorProductId, EdidError> {
     // the first two bytes are the manufacturer name
     let manufacturer_name = vendor(&mut [input[0x08], input[0x09]])?;

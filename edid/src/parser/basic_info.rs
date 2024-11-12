@@ -3,7 +3,7 @@ use bitvec::{order::Lsb0, slice::BitSlice};
 use crate::prelude::internal::*;
 
 /// Parses out some basic info about the display.
-#[tracing::instrument]
+#[tracing::instrument(skip_all)]
 pub(super) fn parse(input: &[u8]) -> Result<BasicDisplayInfo, EdidError> {
     let input_definition = video_input_definition(input[0x14])?;
     let screen_size_or_aspect_ratio = size_or_ratio(input);
@@ -205,7 +205,7 @@ fn gamma(input: &[u8]) -> Option<Decimal> {
     }
 }
 
-#[tracing::instrument]
+#[tracing::instrument(skip_all)]
 fn feature_support(input: &[u8]) -> FeatureSupport {
     // again, using `Lsb0` despite standard being Msb0.
     //

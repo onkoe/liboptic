@@ -10,6 +10,7 @@ mod version;
 
 use crate::prelude::internal::*;
 
+#[tracing::instrument(skip_all)]
 pub fn parse(input: &[u8]) -> Result<Edid, EdidError> {
     // check the length
     check_length(input)?;
@@ -51,6 +52,7 @@ pub fn parse(input: &[u8]) -> Result<Edid, EdidError> {
     Ok(edid)
 }
 
+#[tracing::instrument(skip_all)]
 fn check_length(input: &[u8]) -> Result<(), EdidError> {
     let expected_len = 0x7F;
     let real_len = input.len();
@@ -68,7 +70,7 @@ fn check_length(input: &[u8]) -> Result<(), EdidError> {
 }
 
 /// Returns the checksum byte to the user.
-#[tracing::instrument]
+#[tracing::instrument(skip_all)]
 fn checksum(input: &[u8]) -> u8 {
     let sum = |bytes: &[u8]| bytes.iter().map(|b| *b as u32).sum::<u32>();
 
